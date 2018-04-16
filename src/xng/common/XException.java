@@ -1,5 +1,7 @@
 package xng.common;
 
+import xng.wrapper.XParameter;
+
 public class XException extends Exception {
     public enum exType{
         param_error,
@@ -9,8 +11,8 @@ public class XException extends Exception {
     }
 
     public XException(exType type,String msg){
-        super(msg);
-        this.printStackTrace();
+//        super(msg);
         System.err.println("XNG:"+type.toString()+":"+msg);
+        if (XParameter.verbose>0) this.printStackTrace();
     }
 }

@@ -50,15 +50,23 @@ public class XASTPrinter implements XASTVisitor {
 
     public void visitStmtNode(XASTStmtNode node){
         if(node==null) return;
+        if (node instanceof XASTClassDeclNode){
+            visitClassDeclNode((XASTClassDeclNode)node);
+            return;
+        } else if (node instanceof XASTFuncDeclNode){
+            visitFuncDeclNode((XASTFuncDeclNode)node);
+            return;
+        } else if (node instanceof XASTVarDeclNode) {
+            visitVarDeclNode((XASTVarDeclNode)node);
+            return;
+        } else if (node instanceof XASTExprNode) {
+            visitExprNode((XASTExprNode)node);
+            return;
+        }
         switch(node.nodeID){
             case s_classdecl:
-                visitClassDeclNode((XASTClassDeclNode)node);
-                return;
             case s_funcdecl:
-                visitFuncDeclNode((XASTFuncDeclNode)node);
-                return;
             case s_vardecl:
-                visitVarDeclNode((XASTVarDeclNode)node);
                 return;
             case s_block:
                 break;
@@ -79,7 +87,6 @@ public class XASTPrinter implements XASTVisitor {
             case s_none:
                 return;
             default:
-                visitExprNode((XASTExprNode)node);
                 return;
         }
         print("Statment:"+node.nodeID.toString()+":\n");
@@ -89,16 +96,11 @@ public class XASTPrinter implements XASTVisitor {
     }
     public void visitExprNode(XASTExprNode node){
         if(node==null) return;
+        if (node instanceof XASTPrimNode) {
+            visitPrimNode((XASTPrimNode)node);
+            return;
+        }
         switch (node.nodeID){
-            case p_expr:
-            case p_id:
-            case p_lit_bool:
-            case p_lit_int:
-            case p_lit_null:
-            case p_lit_str:
-            case p_this:
-                visitPrimNode((XASTPrimNode)node);
-                return;
             case e_add:
                 break;
             case e_asgn:

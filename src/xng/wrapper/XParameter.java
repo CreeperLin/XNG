@@ -8,10 +8,11 @@ public class XParameter {
 
     Vector<String> srcPath = new Vector<>();
 
-    boolean isEnableSemanticCheck;
-    boolean isEnableIR;
-    boolean isEnableOptimization;
-    boolean isEnableAssembly;
+    public static boolean isEnableSemanticCheck;
+    public static boolean isEnableIR;
+    public static boolean isEnableOptimization;
+    public static boolean isEnableAssembly;
+    public static int verbose = 0;
 
     XParameter(String[] args) throws XException {
         isEnableSemanticCheck = true;
@@ -31,6 +32,12 @@ public class XParameter {
                         default:
                             throw new XException(XException.exType.param_error,"invalid parameter");
                     }
+                } else if (i.startsWith("-v")){
+                    for (char t:i.toCharArray()){
+                        if (t=='v'){
+                            ++verbose;
+                        }
+                    }
                 }
             }
         }
@@ -39,7 +46,7 @@ public class XParameter {
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;
 //        isEnableOptimization = true;
-
+        System.out.println("XParams:verbose:"+verbose);
     }
 
 }

@@ -1,5 +1,6 @@
 package xng.frontend;
 
+import xng.common.XException;
 import xng.frontend.AST.*;
 
 public interface XASTVisitor {

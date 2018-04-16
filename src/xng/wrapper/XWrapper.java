@@ -8,6 +8,7 @@ import xng.antlr.MxParser;
 import xng.antlr.XNGVisitor;
 import xng.common.XException;
 import xng.frontend.AST.XASTCUNode;
+import xng.frontend.SemanticAnalyzer;
 import xng.frontend.XASTPrinter;
 
 import java.io.IOException;
@@ -54,5 +55,9 @@ public class XWrapper {
 
         XASTPrinter printer = new XASTPrinter();
         printer.visitCUNode(prog);
+
+        SemanticAnalyzer SA = new SemanticAnalyzer();
+        SA.visitCUNode(prog);
+
     }
 }

@@ -23,29 +23,27 @@ public class ScopedSymbolTable {
     Integer symCount=1;
     public ScopedSymbolTable(){
         symTableStack = new Stack<>();
-        symTableStack.push(new SymbolScope("global"));
     }
 
-    void pop_scope(){
+    public void pop_scope(){
         symTableStack.pop();
         out.println("SST:pop scope: cur:"+symTableStack.size());
     }
 
-    void push_scope(String scopeName){
+    public void push_scope(String scopeName){
         symTableStack.push(new SymbolScope(scopeName));
         out.println("SST:push scope:"+scopeName+" cur:"+symTableStack.size());
     }
 
-    boolean regSymbol(String str, SymbolID.symType type, Integer tag) throws XException {
+    public void regSymbol(String str, SymbolID.symType type, Integer tag) throws XException {
         out.println("sym:"+str);
         if (findSymbol(str)>0) {
             throw new XException(XException.exType.compile_error,"error: redifinition of " + str);
         }
         symTableStack.peek().symTable.put(str,new SymbolID(type,symCount++,tag));
-        return true;
     }
 
-    int findSymbol(String str){
+    public int findSymbol(String str){
         final int[] t = {0};
         symTableStack.forEach(i -> {
             if (i.symTable.containsKey(str)) {
