@@ -1,11 +1,10 @@
 package xng.frontend.Symbol;
 
-import xng.frontend.Symbol.SymbolID;
+import xng.common.XException;
 
 import java.util.Stack;
 import java.util.TreeMap;
 
-import static java.lang.System.err;
 import static java.lang.System.out;
 
 public class ScopedSymbolTable {
@@ -22,9 +21,8 @@ public class ScopedSymbolTable {
     }
     Stack<SymbolScope> symTableStack;
     Integer symCount=1;
-    ScopedSymbolTable(){
+    public ScopedSymbolTable(){
         symTableStack = new Stack<>();
-//            symTableStack.removeAllElements();
         symTableStack.push(new SymbolScope("global"));
     }
 
@@ -38,14 +36,11 @@ public class ScopedSymbolTable {
         out.println("SST:push scope:"+scopeName+" cur:"+symTableStack.size());
     }
 
-    boolean regSymbol(String str, SymbolID.symType type, Integer tag){
+    boolean regSymbol(String str, SymbolID.symType type, Integer tag) throws XException {
         out.println("sym:"+str);
         if (findSymbol(str)>0) {
-            err.println("error: redifinition of " + str);
-//                exit(1);
-            return false;
+            throw new XException(XException.exType.compile_error,"error: redifinition of " + str);
         }
-//            out.println("symbol not found:"+str);
         symTableStack.peek().symTable.put(str,new SymbolID(type,symCount++,tag));
         return true;
     }

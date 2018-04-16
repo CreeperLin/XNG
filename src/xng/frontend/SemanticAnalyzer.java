@@ -1,11 +1,14 @@
 package xng.frontend;
 
 import xng.frontend.AST.*;
+import xng.frontend.Symbol.ScopedSymbolTable;
 
 public class SemanticAnalyzer implements XASTVisitor{
 
-    public void visitCUNode(XASTCUNode node){
+    ScopedSymbolTable SST = new ScopedSymbolTable();
 
+    public void visitCUNode(XASTCUNode node){
+        node.declList.forEach(this::visitStmtNode);
     }
     public void visitClassDeclNode(XASTClassDeclNode node){
 

@@ -19,7 +19,7 @@ public class XParameter {
             if (i.toCharArray()[0] != '-'){
                 srcPath.add(i);
             } else {
-                if (i.equals("--demo-semantic")){
+                if (i.equals("--semantic")){
                     isEnableIR = false;
                 } else if (i.startsWith("-O")){
                     switch(i.charAt(2)) {

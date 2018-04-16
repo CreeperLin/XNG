@@ -10,9 +10,10 @@ public class XASTPrinter implements XASTVisitor {
 
     private void print(String str){
         int t=indentLevel;
-        while (t-->0){
-            out.print('\t');
+        while (t-->1){
+            out.print(" |  ");
         }
+        if (t>=0) out.print(" |--");
         out.print(str);
     }
 
