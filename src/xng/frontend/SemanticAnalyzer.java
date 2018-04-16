@@ -11,10 +11,10 @@ public class SemanticAnalyzer implements XASTVisitor{
         node.declList.forEach(this::visitStmtNode);
     }
     public void visitClassDeclNode(XASTClassDeclNode node){
-
+        SST.regSymbol(node.name);
     }
     public void visitFuncDeclNode(XASTFuncDeclNode node){
-
+        SST.regSymbol(node.name);
     }
     public void visitVarDeclNode(XASTVarDeclNode node){
 

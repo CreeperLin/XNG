@@ -1,7 +1,7 @@
 package xng.frontend.Symbol;
 
 public class SymbolID {
-    enum symType {
+    public enum symType {
         sym_none,sym_var,sym_func,sym_class
     }
 
