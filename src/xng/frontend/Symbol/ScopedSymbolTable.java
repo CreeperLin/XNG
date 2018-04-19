@@ -1,7 +1,5 @@
 package xng.frontend.Symbol;
 
-import xng.common.XException;
-
 import java.util.Stack;
 import java.util.TreeMap;
 
@@ -19,7 +17,7 @@ public class ScopedSymbolTable {
         }
 
     }
-    Stack<SymbolScope> symTableStack;
+    public Stack<SymbolScope> symTableStack;
     Integer symCount=1;
     public ScopedSymbolTable(){
         symTableStack = new Stack<>();
@@ -35,23 +33,27 @@ public class ScopedSymbolTable {
         out.println("SST:push scope:"+scopeName+" cur:"+symTableStack.size());
     }
 
-    public void regSymbol(String str, SymbolID.symType type, Integer tag) throws XException {
-        out.println("sym:"+str);
-        if (findSymbol(str)>0) {
-            throw new XException(XException.exType.compile_error,"error: redifinition of " + str);
+    public boolean regSymbol(String str, SymbolType type, Integer tag){
+        if (symTableStack.peek().symTable.containsKey(str)) {
+            return true;
         }
+//        if (findSymbol(str)>0) {
+//            return false;
+//        }
         symTableStack.peek().symTable.put(str,new SymbolID(type,symCount++,tag));
+        out.println("reg sym:"+symTableStack.peek().scopeName+":"+str);
+        return false;
     }
 
-    public int findSymbol(String str){
-        final int[] t = {0};
-        symTableStack.forEach(i -> {
+    public SymbolID findSymbol(String str){
+        for (SymbolScope i : symTableStack) {
             if (i.symTable.containsKey(str)) {
-                t[0] = i.symTable.get(str).id;
+                return i.symTable.get(str);
             }
-        });
-        return t[0];
+        }
+        return null;
     }
+
 }
 
 

@@ -46,7 +46,6 @@ public class XParameter {
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;
 //        isEnableOptimization = true;
-        System.out.println("XParams:verbose:"+verbose);
     }
 
 }

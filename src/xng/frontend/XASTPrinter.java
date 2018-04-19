@@ -4,7 +4,7 @@ import xng.frontend.AST.*;
 
 import static java.lang.System.*;
 
-public class XASTPrinter implements XASTVisitor {
+public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
 
     private int indentLevel = 0;
 
@@ -20,28 +20,28 @@ public class XASTPrinter implements XASTVisitor {
     public void visitCUNode(XASTCUNode node){
         print("AST begin:\nCompilationUnit:\n");
         ++indentLevel;
-        node.declList.forEach(this::visitStmtNode);
+        node.declList.forEach(this::visitStmt);
         --indentLevel;
     }
     public void visitClassDeclNode(XASTClassDeclNode node){
         print("Class:"+node.name+":\n");
         ++indentLevel;
-        node.memberList.forEach(this::visitStmtNode);
+        node.stmtList.forEach(this::visitStmt);
         --indentLevel;
     }
     public void visitFuncDeclNode(XASTFuncDeclNode node){
         print("Function:"+node.name+":\n");
         ++indentLevel;
         visitTypeNode(node.type);
-        visitStmtNode(node.paramList);
-        visitStmtNode(node.funcBody);
+        visitStmt(node.paramList);
+        visitStmt(node.funcBody);
         --indentLevel;
     }
     public void visitVarDeclNode(XASTVarDeclNode node){
         print("VarDecl:"+node.name+":\n");
         ++indentLevel;
         visitTypeNode(node.type);
-        visitExprNode(node.initExpr);
+        visitExpr(node.initExpr);
         --indentLevel;
     }
     public void visitTypeNode(XASTTypeNode node){
@@ -49,25 +49,7 @@ public class XASTPrinter implements XASTVisitor {
     }
 
     public void visitStmtNode(XASTStmtNode node){
-        if(node==null) return;
-        if (node instanceof XASTClassDeclNode){
-            visitClassDeclNode((XASTClassDeclNode)node);
-            return;
-        } else if (node instanceof XASTFuncDeclNode){
-            visitFuncDeclNode((XASTFuncDeclNode)node);
-            return;
-        } else if (node instanceof XASTVarDeclNode) {
-            visitVarDeclNode((XASTVarDeclNode)node);
-            return;
-        } else if (node instanceof XASTExprNode) {
-            visitExprNode((XASTExprNode)node);
-            return;
-        }
         switch(node.nodeID){
-            case s_classdecl:
-            case s_funcdecl:
-            case s_vardecl:
-                return;
             case s_block:
                 break;
             case s_break:
@@ -91,15 +73,10 @@ public class XASTPrinter implements XASTVisitor {
         }
         print("Statment:"+node.nodeID.toString()+":\n");
         ++indentLevel;
-        node.stmtList.forEach(this::visitStmtNode);
+        node.stmtList.forEach(this::visitStmt);
         --indentLevel;
     }
     public void visitExprNode(XASTExprNode node){
-        if(node==null) return;
-        if (node instanceof XASTPrimNode) {
-            visitPrimNode((XASTPrimNode)node);
-            return;
-        }
         switch (node.nodeID){
             case e_add:
                 break;
@@ -156,11 +133,7 @@ public class XASTPrinter implements XASTVisitor {
             case e_neg:
                 break;
             case e_new:
-                print("Expression:"+node.nodeID.toString()+":\n");
-                ++indentLevel;
-                visitCreatorNode((XASTCreatorNode)node.exprList.elementAt(0));
-                --indentLevel;
-                return;
+                break;
             case e_not:
                 break;
             case e_pos:
@@ -178,14 +151,14 @@ public class XASTPrinter implements XASTVisitor {
         }
         print("Expression:"+node.nodeID.toString()+":\n");
         ++indentLevel;
-        node.exprList.forEach(this::visitExprNode);
+        node.exprList.forEach(this::visitExpr);
         --indentLevel;
     }
     public void visitPrimNode(XASTPrimNode node){
-        if (node.nodeID==XASTNodeID.p_expr){
-            visitExprNode(node.exprList.elementAt(0));
-            return;
-        }
+//        if (node.nodeID==XASTNodeID.p_expr){
+//            visitExprNode(node.exprList.elementAt(0));
+//            return;
+//        }
         print("Primary:"+node.nodeID.toString()+":");
         switch (node.nodeID){
             case p_expr:
@@ -214,7 +187,7 @@ public class XASTPrinter implements XASTVisitor {
         print("Creator:\n");
         ++indentLevel;
         visitTypeNode(node.type);
-        node.exprList.forEach(this::visitExprNode);
+        node.exprList.forEach(this::visitExpr);
         --indentLevel;
     }
 
