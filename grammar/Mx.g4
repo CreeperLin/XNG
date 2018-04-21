@@ -46,12 +46,12 @@ blockStat
 statement
     :   block
     |   key='if' '(' cond=expression ')' body=statement (iselse='else' elsebody=statement)?
-    |   key='for' '('  init=varDecl? ';' cond=expression? ';' step=exprList? ')' body=statement
+    |   key='for' '(' init=expression? ';' cond=expression? ';' step=exprList? ')' body=statement
     |   key='while' '(' cond=expression ')' body=statement
     |   key='return' ret=expression? ';'
     |   key='continue' ';'
     |   key='break' ';'
-    |   expression ';'
+    |   expr=expression ';'
 //    |   ';'
     ;
 
@@ -71,7 +71,8 @@ expression
     |   expression op='.' expression
     |   expression op='[' expression ']'
     |   expression op='(' exprList? ')'
-    |   <assoc=right> op=('+'|'-'|'++'|'--') expression
+    |   <assoc=right> op=('++'|'--') expression
+    |   <assoc=right> op=('+'|'-') expression
     |   <assoc=right> op=('~'|'!') expression
     |   <assoc=right> op='new' creator
     |   expression op=('*'|'/'|'%') expression
@@ -95,7 +96,7 @@ primary
     ;
 
 creator
-    :   type (arrayInit|classInit)
+    :   type (arrayInit|classInit?)
     ;
 
 arrayInit
@@ -105,12 +106,8 @@ arrayInit
 classInit
     :   '(' exprList? ')'
     ;
-//basic
-//
-//varDecls
-//    :   type varDecl (',' varDecl)*
-//    ;
 
+//basic
 varDecl
     :   type Identifier ('=' expression)?
     ;
@@ -121,7 +118,7 @@ type
     ;
 
 classType
-    : Identifier ('.' Identifier)*
+    : Identifier
     ;
 
 primType
@@ -131,38 +128,38 @@ primType
     ;
 
 literal
-    :   boolLiteral
-    |   intLiteral
-    |   strLiteral
-    |   nullLiteral
+    :   BoolLiteral
+    |   IntLiteral
+    |   StrLiteral
+    |   NullLiteral
     ;
 
-nullLiteral
+NullLiteral
     :   'null'
     ;
 
-boolLiteral
+BoolLiteral
     :   'true'
     |   'false'
     ;
 
-intLiteral
+IntLiteral
     :   DecimalLiteral
     ;
 
-strLiteral
-    :   '"'(EscSeq|~('\\'|'"'))*'"'
+StrLiteral
+    :   '"' ((EscSeq|~('"'|'\\'))+)? '"'
     ;
-//LEXER
 
 DecimalLiteral
-    : '0'|('-'?[1-9][0-9]*) ;
+    : '0'|([1-9][0-9]*) ;
 
 Identifier
     : [a-zA-Z]([a-zA-Z0-9_])* ;
 
+fragment
 EscSeq
-    : '\\'('t'|'n'|'"'|'\\'|'\'') ;
+    : '\\'('n'|'"'|'\\') ;
 
 LB
     : '[' ;
@@ -184,4 +181,4 @@ RBB
 
 COMMENT : '//'.*?'\r'?'\n' -> skip ;
 NEWLINE : ('\r'?'\n')+ -> skip ;
-WS : (' '|'\t'|'\n')+ -> skip ;
+WS : (' '|'\t'|'\n')+ -> channel(HIDDEN);

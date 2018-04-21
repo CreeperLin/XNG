@@ -65,10 +65,7 @@ public class XWrapper {
             fatalError();
             return;
         }
-        out.println(tree.toStringTree(parser));
-
-//        XNGListener extractor = new XNGListener(parser);
-//        ParseTreeWalker.DEFAULT.walk(extractor,tree);
+//        out.println(tree.toStringTree(parser));
 
         XNGVisitor ASTExtractor = new XNGVisitor(parser);
         XASTCUNode prog = ASTExtractor.visitCompilationUnit(tree);
@@ -84,5 +81,6 @@ public class XWrapper {
             fatalError();
             return;
         }
+        out.println("XNG:end");
     }
 }

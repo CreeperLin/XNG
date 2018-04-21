@@ -71,7 +71,7 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
             default:
                 return;
         }
-        print("Statment:"+node.nodeID.toString()+":\n");
+        print("Statment:"+node.nodeID.toString()+":"+node.hashCode()+":\n");
         ++indentLevel;
         node.stmtList.forEach(this::visitStmt);
         --indentLevel;
@@ -149,7 +149,7 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
             default:
                 return;
         }
-        print("Expression:"+node.nodeID.toString()+":\n");
+        print("Expression:"+node.nodeID.toString()+":"+node.hashCode()+":\n");
         ++indentLevel;
         node.exprList.forEach(this::visitExpr);
         --indentLevel;
@@ -187,7 +187,7 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
         print("Creator:\n");
         ++indentLevel;
         visitTypeNode(node.type);
-        node.exprList.forEach(this::visitExpr);
+        if (node.exprList!=null) node.exprList.forEach(this::visitExpr);
         --indentLevel;
     }
 

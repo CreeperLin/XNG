@@ -1,10 +1,8 @@
 package xng.frontend;
 
+import org.antlr.v4.runtime.tree.ParseTree;
 import xng.common.XCompileError;
-import xng.frontend.AST.XASTCUNode;
-import xng.frontend.AST.XASTClassDeclNode;
-import xng.frontend.AST.XASTFuncDeclNode;
-import xng.frontend.AST.XASTVarDeclNode;
+import xng.frontend.AST.*;
 import xng.frontend.Symbol.ScopedSymbolTable;
 import xng.frontend.Symbol.SymbolType;
 
@@ -26,6 +24,17 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
     public void visitCUNode(XASTCUNode node) {
         System.out.println("Global Scope Builder begin:");
         SST.push_scope("global");
+        SST.regSymbol("size",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("println",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("print",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("getString",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("getInt",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("toString",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("string.length",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("string.substring",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("string.parseInt",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+        SST.regSymbol("string.ord",new SymbolType(SymbolType.typType.FUNC,null,0),0);
+
         node.declList.forEach(this::visitStmt);
     }
 
@@ -57,14 +66,22 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
                 ce.add(XCompileError.ceType.ce_redef,"func:"+node.name,node);
             }
         }
+        visitStmt(node.paramList);
     }
 
     @Override
     public void visitVarDeclNode(XASTVarDeclNode node) {
-//        visitTypeNode(node.type);
-//        visitExprNode(node.initExpr);
         if (SST.regSymbol(getScopeName(node.name, false), new SymbolType(node.type), 0)) {
             ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
+        }
+    }
+
+    @Override
+    public void visitStmtNode(XASTStmtNode node) {
+        switch (node.nodeID){
+            case s_plist:
+
+                break;
         }
     }
 }

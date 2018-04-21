@@ -9,9 +9,11 @@ import java.util.Vector;
 public class XASTExprNode extends XASTStmtNode{
 
     public Vector<XASTExprNode> exprList;
-    public SymbolType type;
+    public SymbolType type = null;
 
-    XASTExprNode(){}
+    public XASTExprNode() {
+        super(null,XASTNodeID.e_none,null);
+    }
 
     public XASTExprNode(SrcPos ctx, XASTNodeID _e, Vector<XASTExprNode> _l){
         super(ctx, _e,null);

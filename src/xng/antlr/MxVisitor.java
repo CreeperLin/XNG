@@ -136,28 +136,4 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitLiteral(MxParser.LiteralContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link MxParser#nullLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNullLiteral(MxParser.NullLiteralContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link MxParser#boolLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBoolLiteral(MxParser.BoolLiteralContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link MxParser#intLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIntLiteral(MxParser.IntLiteralContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link MxParser#strLiteral}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStrLiteral(MxParser.StrLiteralContext ctx);
 }

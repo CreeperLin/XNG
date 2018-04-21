@@ -2,6 +2,7 @@ package xng.frontend.Symbol;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class SrcPos {
     public int startLine;
@@ -32,6 +33,10 @@ public class SrcPos {
         startLine = endLine = tk.getLine();
         startColumn = tk.getCharPositionInLine();
         endColumn = startColumn + tk.getText().length();
+    }
+
+    public SrcPos(TerminalNode node){
+        this(node.getSymbol());
     }
 
     @Override

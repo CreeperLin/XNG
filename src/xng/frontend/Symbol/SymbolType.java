@@ -8,6 +8,8 @@ public class SymbolType {
     static public SymbolType strType = new SymbolType(typType.STR,null,0);
     static public SymbolType voidType = new SymbolType(typType.VOID,null,0);
     static public SymbolType nullType = new SymbolType(typType.NULL,null,0);
+    static public SymbolType funcType = new SymbolType(typType.FUNC,null,0);
+    static public SymbolType classType = new SymbolType(typType.CLASS,null,0);
     class ArrayType extends SymbolType{
         ArrayType(){
             super(null,null,0);

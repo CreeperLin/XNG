@@ -12,7 +12,8 @@ public class XCompileError {
         ce_invalid_type,
         ce_redef,
         ce_nodecl,
-        ce_
+        ce_outofloop,
+        ce_type,
     }
     HashMap<ceType,String> errDesc = new HashMap<>();
     Vector<String> srcLines;
@@ -27,7 +28,7 @@ public class XCompileError {
         String line = srcLines.elementAt(node.pos.startLine-1);
         m.append(node.pos.toString()).append(" error: ").append(type.toString()).append(":").append(msg).append('\n').append(line).append('\n');
         for (int i=0;i<node.pos.startColumn;++i){
-            m.append(' ');
+            m.append(((line.charAt(i) == '\t') ? '\t' : ' '));
         }
         m.append('^');
         for (int i = node.pos.startColumn+1;i<node.pos.endColumn;++i){
