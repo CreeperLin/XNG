@@ -30,7 +30,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
             declPrimType((XASTPrimNode) node);
             return;
         }
-        if (node.exprList != null) return;
+        if (node.exprList == null) return;
         node.exprList.forEach(this::declExprType);
         switch (node.nodeID){
             case e_sub:
