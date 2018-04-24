@@ -3,8 +3,14 @@ grammar Mx;
 //PARSER
 //entry point
 compilationUnit
-    :   (classDecl|funcDecl|varDeclStat)*
+    :   progSection*
         EOF
+    ;
+
+progSection
+    :   classDecl
+    |   funcDecl
+    |   varDeclStat
     ;
 
 //class&function

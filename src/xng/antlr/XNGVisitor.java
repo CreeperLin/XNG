@@ -18,12 +18,17 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     @Override public XASTCUNode visitCompilationUnit(MxParser.CompilationUnitContext ctx) {
         if (ctx==null) return null;
         out.println("compilation begin");
-        XASTCUNode prog = new XASTCUNode(new SrcPos(ctx));
-        ctx.varDeclStat().stream().map(this::visitVarDeclStat).forEach(prog::add);
-        ctx.classDecl().stream().map(this::visitClassDecl).forEach(prog::add);
-        ctx.funcDecl().stream().map(this::visitFuncDecl).forEach(prog::add);
+        XASTCUNode prog = new XASTCUNode(new SrcPos(ctx),
+                ctx.progSection().stream().map(this::visitProgSection).collect(Collectors.toCollection(Vector::new)));
         out.println("compilation terminated");
         return prog;
+    }
+
+    @Override public XASTStmtNode visitProgSection(MxParser.ProgSectionContext ctx) {
+        if (ctx.classDecl() != null) return visitClassDecl(ctx.classDecl());
+        if (ctx.varDeclStat() != null) return visitVarDeclStat(ctx.varDeclStat());
+        if (ctx.funcDecl()!= null) return visitFuncDecl(ctx.funcDecl());
+        return null;
     }
 
     @Override public XASTStmtNode visitClassDecl(MxParser.ClassDeclContext ctx) {

@@ -75,8 +75,8 @@ public class SymbolType {
 
     public boolean equals(SymbolType _t){
         if (_t == null) return false;
-        if (declType == typType.NULL) return _t.arrayDim>0 || _t.declType == typType.NULL || _t.declType==typType.STR || _t.declType==typType.CLASS;
-        if (_t.declType==typType.NULL) return arrayDim>0 || declType==typType.STR || declType==typType.CLASS;
+        if (declType == typType.NULL) return _t.arrayDim>0 || _t.declType == typType.NULL || _t.declType==typType.CLASS;
+        if (_t.declType==typType.NULL) return arrayDim>0 || declType==typType.CLASS;
         return (arrayDim==_t.arrayDim)&&(declType==_t.declType)&&((className==null)?_t.className==null:className.equals(_t.className));
     }
 

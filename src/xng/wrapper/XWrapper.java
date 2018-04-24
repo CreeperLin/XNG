@@ -20,11 +20,10 @@ import java.io.IOException;
 import java.util.Vector;
 
 import static java.lang.System.err;
-import static java.lang.System.exit;
 import static java.lang.System.out;
 
 public class XWrapper {
-    static void fatalError() throws Exception {
+    private static void fatalError() throws Exception {
         err.println("XNG:fatal error");
         throw new Exception("XNG:fatal error");
 //        exit(1);
@@ -78,7 +77,7 @@ public class XWrapper {
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
         compileError.print();
-        if (compileError.errorList.size()>0){
+        if (compileError.errorCount>0){
             fatalError();
             return;
         }

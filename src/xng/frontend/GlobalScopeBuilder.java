@@ -9,18 +9,18 @@ import xng.frontend.Symbol.SymbolType;
 import java.util.Vector;
 
 public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
-    ScopedSymbolTable SST;
-    XCompileError ce;
-    String curClassName = null;
-    String curFuncName = null;
-    Vector<SymbolType> funcParams = new Vector<>();
+    private ScopedSymbolTable SST;
+    private XCompileError ce;
+    private String curClassName = null;
+    private String curFuncName = null;
+    private Vector<SymbolType> funcParams = new Vector<>();
 
     public GlobalScopeBuilder(ScopedSymbolTable _S, XCompileError _c){
         SST = _S;
         ce = _c;
     }
 
-    String getScopeName(String name, boolean con){
+    private String getScopeName(String name, boolean con){
         return (curClassName==null?"":curClassName+'.')+(con?"__init__":name);
     }
 
@@ -62,8 +62,12 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         plist.add(SymbolType.intType);
         SST.regSymbol("string.ord",new SymbolType(new Vector<>(plist)),0);
         node.declList.forEach(this::visitStmt);
-        if (SST.findSymbol("main") == null) {
+
+        SymbolID symMain = SST.findSymbol("main");
+        if (symMain == null) {
             ce.add(XCompileError.ceType.ce_nodecl,"main",node);
+        } else if (!symMain.type.typeList.elementAt(0).equals(SymbolType.intType)) {
+            ce.add(XCompileError.ceType.ce_type,"main ret type",node);
         }
     }
 
@@ -112,9 +116,10 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         if (curFuncName != null) {
             funcParams.add(type);
             System.out.println("func param:"+funcParams.size()+":"+curFuncName+":"+node.name+":"+type);
-        } else if (SST.regSymbol(getScopeName(node.name, false), type, 0)) {
-            ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
         }
+//        else if (SST.regSymbol(getScopeName(node.name, false), type, 0)) {
+//            ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
+//        }
     }
 
     @Override

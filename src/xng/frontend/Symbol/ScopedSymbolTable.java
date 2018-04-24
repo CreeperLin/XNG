@@ -17,8 +17,8 @@ public class ScopedSymbolTable {
         }
 
     }
-    public Stack<SymbolScope> symTableStack;
-    Integer symCount=0;
+    private Stack<SymbolScope> symTableStack;
+    private Integer symCount=0;
     public ScopedSymbolTable(){
         symTableStack = new Stack<>();
     }
@@ -34,7 +34,7 @@ public class ScopedSymbolTable {
     }
 
     public boolean regSymbol(String str, SymbolType type, Integer tag){
-        if (symTableStack.peek().symTable.containsKey(str)) {
+        if (symTableStack.peek().symTable.containsKey(str) || symTableStack.elementAt(0).symTable.containsKey(str)) {
             return true;
         }
 //        if (findSymbol(str)>0) {

@@ -60,7 +60,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
         for (int i=0;i<fparams.size();++i){
             out.println("dbg param:"+fparams.elementAt(i)+" "+ftype.typeList.elementAt(i+1));
             if (!fparams.elementAt(i).equals(ftype.typeList.elementAt(i+1))){
-                return i-1;
+                return i+1;
             }
         }
         return 0;
@@ -98,9 +98,14 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
         out.println("curFunc:"+curFuncName);
         curFuncType = new SymbolType(node.retType);
         SST.push_scope(node.name);
+//        SST.regSymbol(curFuncName,SST.findSymbol(curFuncName).type,0);
         visitStmtNode(node.paramList);
+        isRet = false;
         node.funcBody.stmtList.forEach(this::visitStmt);
         out.println("exitFunc:"+curFuncName);
+        if (!isRet && curFuncType.declType!=SymbolType.typType.VOID) {
+            ce.add(XCompileError.ceType.cw_noreturn,curFuncName,node,false);
+        }
         curFuncName = null;
         curFuncType = null;
         SST.pop_scope();
@@ -113,7 +118,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 ce.add(XCompileError.ceType.ce_type,"vardecl init:"+node.name,node);
             }
         }
-        if (SST.symTableStack.size()>1 && SST.regSymbol(getScopeName(node.name), new SymbolType(node.type), 0)) {
+        if (SST.regSymbol(getScopeName(node.name), new SymbolType(node.type), 0)) {
             ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
         }
     }
@@ -160,6 +165,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                         ce.add(XCompileError.ceType.ce_type,"return:"+curFuncName,node.stmtList.elementAt(0));
                     }
                 }
+                isRet = true;
                 return;
             case s_cont:
             case s_break:
@@ -168,8 +174,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 }
                 break;
             case s_plist:
-                if (node.stmtList !=null) node.stmtList.forEach(this::visitStmt);
-                return;
+                break;
             case s_for:
                 ++loopCount;
                 node.stmtList.forEach(this::visitStmt);
@@ -304,7 +309,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     } else if (t==-1){
                         ce.add(XCompileError.ceType.ce_type,"call param len:"+fparams.size()+"/"+(ftype.typeList.size()-1),node);
                     } else {
-                        ce.add(XCompileError.ceType.ce_type,"call param retType:"+fparams.elementAt(t-1),node.exprList.elementAt(1).exprList.elementAt(t));
+                        ce.add(XCompileError.ceType.ce_type,"call param retType:"+fparams.elementAt(t-2),node.exprList.elementAt(1).exprList.elementAt(t-1));
                     }
                 }
                 break;
@@ -322,8 +327,8 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 if (node.exprList.elementAt(0).type.equals(node.exprList.elementAt(1).type)){
                     out.println("equal expr:");
                     node.type = SymbolType.boolType;
-                } else if (assertExprType(node.exprList.elementAt(0),SymbolType.nullType)
-                        ||assertExprType(node.exprList.elementAt(1),SymbolType.nullType)){
+                } else if (node.exprList.elementAt(0).type.declType==SymbolType.typType.NULL
+                        ||node.exprList.elementAt(0).type.declType==SymbolType.typType.NULL){
                     node.type = SymbolType.boolType;
                     out.println("equal null expr:"+node.type.declType.toString());
                 } else {
@@ -419,7 +424,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     node.type = null;
                 } else {
                     node.type = sym.type;
-                    out.println("prim id:"+node.strLiteral+":"+node.type.declType.toString());
+                    out.println("prim id:"+node.strLiteral+":"+node.type);
                 }
                 break;
         }
