@@ -119,6 +119,12 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType(MxParser.TypeContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MxParser#nonArrayType}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNonArrayType(MxParser.NonArrayTypeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MxParser#classType}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

@@ -18,7 +18,7 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     @Override public XASTCUNode visitCompilationUnit(MxParser.CompilationUnitContext ctx) {
         if (ctx==null) return null;
         out.println("compilation begin");
-        XASTCUNode prog = new XASTCUNode();
+        XASTCUNode prog = new XASTCUNode(new SrcPos(ctx));
         ctx.varDeclStat().stream().map(this::visitVarDeclStat).forEach(prog::add);
         ctx.classDecl().stream().map(this::visitClassDecl).forEach(prog::add);
         ctx.funcDecl().stream().map(this::visitFuncDecl).forEach(prog::add);
@@ -77,10 +77,13 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     }
 
     @Override public XASTStmtNode visitStatement(MxParser.StatementContext ctx) {
-        if (ctx==null) return null;
+        if (ctx==null) return new XASTStmtNode();
         if (ctx.key == null){
             if (ctx.block() != null) {
                 return visitBlock(ctx.block());
+            }
+            if (ctx.colon != null){
+                return new XASTStmtNode();
             }
             return visitExpression(ctx.expr);
         }
@@ -95,22 +98,22 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
                 break;
             case "for":
                 type = XASTNodeID.s_for;
-                v.add((ctx.init==null)?new XASTStmtNode():visitExpression(ctx.init));
-                v.add((ctx.cond==null)?new XASTStmtNode():visitExpression(ctx.cond));
-                v.add((ctx.step==null)?new XASTStmtNode():visitExprList(ctx.step));
-                v.add((ctx.body==null)?new XASTStmtNode():visitStatement(ctx.body));
+                v.add(visitExpression(ctx.init));
+                v.add(visitExpression(ctx.cond));
+                v.add(visitExprList(ctx.step));
+                v.add(visitStatement(ctx.body));
                 break;
             case "while":
                 type = XASTNodeID.s_while;
-                v.add((ctx.cond==null)?new XASTStmtNode():visitExpression(ctx.cond));
-                v.add((ctx.body==null)?new XASTStmtNode():visitStatement(ctx.body));
+                v.add(visitExpression(ctx.cond));
+                v.add(visitStatement(ctx.body));
                 break;
             case "break":
                 type = XASTNodeID.s_break;
                 break;
             case "return":
                 type = XASTNodeID.s_ret;
-                v.add((ctx.ret==null)?new XASTStmtNode():visitExpression(ctx.ret));
+                v.add(visitExpression(ctx.ret));
                 break;
             case "continue":
                 type = XASTNodeID.s_cont;
@@ -123,8 +126,9 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     }
 
     @Override public XASTExprNode visitExpression(MxParser.ExpressionContext ctx) {
-        if (ctx==null) return null;
+        if (ctx==null) return new XASTExprNode();
         if (ctx.primary() != null){
+            if (ctx.primary().expression()!=null) return visitExpression(ctx.primary().expression());
             return visitPrimary(ctx.primary());
         }
         XASTNodeID type;
@@ -243,33 +247,41 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     }
 
     @Override public XASTExprNode visitExprList(MxParser.ExprListContext ctx) {
-        if (ctx==null) return null;
+        if (ctx==null) return new XASTExprNode();
         return new XASTExprNode(new SrcPos(ctx),XASTNodeID.e_list,
                 ctx.expression().stream().map(this::visitExpression).collect(Collectors.toCollection(Vector::new)));
     }
 
     @Override public XASTPrimNode visitPrimary(MxParser.PrimaryContext ctx) {
         if (ctx.isthis != null) return new XASTPrimNode(new SrcPos(ctx),XASTNodeID.p_this, 0, null);
-        if (ctx.expression() != null) {
-            Vector<XASTExprNode> _v = new Vector<>();
-            _v.add(visitExpression(ctx.expression()));
-            return new XASTPrimNode(new SrcPos(ctx),XASTNodeID.p_expr, _v);
-        }
+//        if (ctx.expression() != null) {
+//            Vector<XASTExprNode> _v = new Vector<>();
+//            _v.add(visitExpression(ctx.expression()));
+//            return new XASTPrimNode(new SrcPos(ctx),XASTNodeID.p_expr, _v);
+//        }
         if (ctx.Identifier() != null) return new XASTPrimNode(new SrcPos(ctx),XASTNodeID.p_id, 0, ctx.Identifier().getSymbol().getText());
         if (ctx.literal() != null) return visitLiteral(ctx.literal());
-        err.println("error:prim:unknown primary type");
+        err.println("error:prim:unknown primary retType");
         return null;
     }
 
     @Override public XASTBaseNode visitCreator(MxParser.CreatorContext ctx) {
-        if (ctx.classInit()!=null) return new XASTCreatorNode(new SrcPos(ctx),visitType(ctx.type()),visitClassInit(ctx.classInit()));
-        if (ctx.arrayInit()!=null) return new XASTCreatorNode(new SrcPos(ctx),visitType(ctx.type()),visitArrayInit(ctx.arrayInit()));
-        return new XASTCreatorNode(new SrcPos(ctx),visitType(ctx.type()),new XASTExprNode());
+        if (ctx.classInit()!=null) return new XASTCreatorNode(new SrcPos(ctx),visitNonArrayType(ctx.nonArrayType()),visitClassInit(ctx.classInit()));
+        if (ctx.arrayInit()!=null){
+            XASTTypeNode type = visitNonArrayType(ctx.nonArrayType());
+            XASTExprNode expr = visitArrayInit(ctx.arrayInit());
+            type.dim = ctx.arrayInit().LB().size();
+            return new XASTCreatorNode(new SrcPos(ctx),type,expr);
+        }
+        return new XASTCreatorNode(new SrcPos(ctx),visitNonArrayType(ctx.nonArrayType()),null);
     }
 
     @Override public XASTExprNode visitArrayInit(MxParser.ArrayInitContext ctx) {
-        return new XASTExprNode(new SrcPos(ctx),XASTNodeID.e_list,
-                ctx.expression().stream().map(this::visitExpression).collect(Collectors.toCollection(Vector::new)));
+        Vector<XASTExprNode> v = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toCollection(Vector::new));
+//        for (int i = 0; i<ctx.LB().size()-ctx.expression().size(); ++i){
+//            v.add(new XASTExprNode());
+//        }
+        return new XASTExprNode(new SrcPos(ctx),XASTNodeID.e_list,v);
     }
 
     @Override public XASTExprNode visitClassInit(MxParser.ClassInitContext ctx) {
@@ -285,14 +297,20 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
 
     @Override public XASTTypeNode visitType(MxParser.TypeContext ctx) {
         if (ctx==null) return new XASTTypeNode(null,XASTNodeID.t_void,0,null);
+        XASTTypeNode t = visitNonArrayType(ctx.nonArrayType());
+        t.pos = new SrcPos(ctx);
+        if (ctx.LB()!=null) t.dim = ctx.LB().size();
+        return t;
+    }
+    @Override public XASTTypeNode visitNonArrayType(MxParser.NonArrayTypeContext ctx) {
         XASTNodeID type = null;
         String className = null;
         if (ctx.classType()!=null) {
-            out.println("class type");
+            out.println("class retType");
             type = XASTNodeID.t_class;
             className = ctx.classType().Identifier().getSymbol().getText();
         } else if (ctx.primType()!=null) {
-            out.println("prim type");
+            out.println("prim retType");
             switch (ctx.primType().getText()) {
                 case "bool":
                     type = XASTNodeID.t_bool;
@@ -305,12 +323,12 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
                     break;
                 default:
                     type = XASTNodeID.t_void;
-                    err.println("error:unknown primitive type"+ctx.primType().getText());
+                    err.println("error:unknown primitive retType"+ctx.primType().getText());
             }
             className = null;
 
         }
-        return new XASTTypeNode(new SrcPos(ctx),type,(ctx.LB()==null?0:ctx.LB().size()),className);
+        return new XASTTypeNode(null,type,0,className);
     }
 
     @Override public XASTBaseNode visitClassType(MxParser.ClassTypeContext ctx) { return visitChildren(ctx); }

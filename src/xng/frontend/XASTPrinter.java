@@ -32,7 +32,7 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
     public void visitFuncDeclNode(XASTFuncDeclNode node){
         print("Function:"+node.name+":\n");
         ++indentLevel;
-        visitTypeNode(node.type);
+        visitTypeNode(node.retType);
         visitStmt(node.paramList);
         visitStmt(node.funcBody);
         --indentLevel;
@@ -67,13 +67,13 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
             case s_if:
                 break;
             case s_none:
-                return;
+                break;
             default:
                 return;
         }
-        print("Statment:"+node.nodeID.toString()+":"+node.hashCode()+":\n");
+        print("Statment:"+node.nodeID.toString()+":"+node.pos+":\n");
         ++indentLevel;
-        node.stmtList.forEach(this::visitStmt);
+        if (node.stmtList!=null) node.stmtList.forEach(this::visitStmt);
         --indentLevel;
     }
     public void visitExprNode(XASTExprNode node){
@@ -149,20 +149,14 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
             default:
                 return;
         }
-        print("Expression:"+node.nodeID.toString()+":"+node.hashCode()+":\n");
+        print("Expression:"+node.nodeID.toString()+":"+node.pos+":\n");
         ++indentLevel;
-        node.exprList.forEach(this::visitExpr);
+        if (node.exprList != null) node.exprList.forEach(this::visitExpr);
         --indentLevel;
     }
     public void visitPrimNode(XASTPrimNode node){
-//        if (node.nodeID==XASTNodeID.p_expr){
-//            visitExprNode(node.exprList.elementAt(0));
-//            return;
-//        }
         print("Primary:"+node.nodeID.toString()+":");
         switch (node.nodeID){
-            case p_expr:
-                break;
             case p_id:
                 out.print(node.strLiteral);
                 break;
@@ -186,7 +180,7 @@ public class XASTPrinter extends XASTBaseVisitor implements XASTVisitor {
     public void visitCreatorNode(XASTCreatorNode node){
         print("Creator:\n");
         ++indentLevel;
-        visitTypeNode(node.type);
+        visitTypeNode(node.ctype);
         if (node.exprList!=null) node.exprList.forEach(this::visitExpr);
         --indentLevel;
     }

@@ -14,6 +14,7 @@ public class XCompileError {
         ce_nodecl,
         ce_outofloop,
         ce_type,
+        ce_lvalue,
     }
     HashMap<ceType,String> errDesc = new HashMap<>();
     Vector<String> srcLines;
@@ -38,6 +39,7 @@ public class XCompileError {
         System.out.println(m.toString());
     }
     public void print(){
-
+        errorList.forEach(System.out::println);
+        System.out.println("XNG:"+errorList.size()+" error(s)");
     }
 }

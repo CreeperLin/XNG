@@ -41,7 +41,7 @@ public class SrcPos {
 
     @Override
     public String toString() {
-        return "line "+startLine+", col "+startColumn
-                + ((startLine==endLine&&startColumn==endColumn)?"":" to line "+endLine+", col "+endColumn);
+        return "line "+startLine+":"+startColumn
+                + ((startLine==endLine&&startColumn==endColumn)?"":" to line "+endLine+":"+endColumn);
     }
 }

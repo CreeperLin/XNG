@@ -77,6 +77,7 @@ public class XWrapper {
         ScopedSymbolTable SST = new ScopedSymbolTable();
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
+        compileError.print();
         if (compileError.errorList.size()>0){
             fatalError();
             return;

@@ -52,7 +52,7 @@ statement
     |   key='continue' ';'
     |   key='break' ';'
     |   expr=expression ';'
-//    |   ';'
+    |   colon=';'
     ;
 
 varDeclStat
@@ -67,23 +67,35 @@ exprList
 
 expression
     :   primary
-    |   expression op=('++'|'--')
     |   expression op='.' expression
     |   expression op='[' expression ']'
     |   expression op='(' exprList? ')'
+    |   expression op=('++'|'--')
+
+    |   <assoc=right> op=('~'|'!') expression
     |   <assoc=right> op=('++'|'--') expression
     |   <assoc=right> op=('+'|'-') expression
-    |   <assoc=right> op=('~'|'!') expression
     |   <assoc=right> op='new' creator
+
     |   expression op=('*'|'/'|'%') expression
     |   expression op=('+'|'-') expression
+
     |   expression op=('<<'|'>>') expression
-    |   expression op=('<='|'>='|'<'|'>'|'=='|'!=') expression
+
+    |   expression op=('<='|'>='|'<'|'>') expression
+
+    |   expression op=('=='|'!=') expression
+
     |   expression op='&' expression
+
     |   expression op='^' expression
+
     |   expression op='|' expression
+
     |   expression op='&&' expression
+
     |   expression op='||' expression
+
     |   <assoc=right> expression op='=' expression
 //    |   expression op='?' expression ':' expression
     ;
@@ -96,7 +108,7 @@ primary
     ;
 
 creator
-    :   type (arrayInit|classInit?)
+    :   nonArrayType (arrayInit|classInit?)
     ;
 
 arrayInit
@@ -113,8 +125,12 @@ varDecl
     ;
 
 type
-    : primType (LB RB)*
-    | classType (LB RB)*
+    : nonArrayType (LB RB)*
+    ;
+
+nonArrayType
+    :   primType
+    |   classType
     ;
 
 classType

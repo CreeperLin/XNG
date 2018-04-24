@@ -18,7 +18,7 @@ public class ScopedSymbolTable {
 
     }
     public Stack<SymbolScope> symTableStack;
-    Integer symCount=1;
+    Integer symCount=0;
     public ScopedSymbolTable(){
         symTableStack = new Stack<>();
     }
@@ -40,17 +40,20 @@ public class ScopedSymbolTable {
 //        if (findSymbol(str)>0) {
 //            return false;
 //        }
-        symTableStack.peek().symTable.put(str,new SymbolID(type,symCount++,tag));
-        out.println("reg sym:"+symTableStack.peek().scopeName+":"+str);
+        symTableStack.peek().symTable.put(str,new SymbolID(type,++symCount,tag));
+        out.println("sym reg:"+symTableStack.peek().scopeName+":"+str+":"+type+":"+symCount);
         return false;
     }
 
     public SymbolID findSymbol(String str){
+        out.print("sym find:"+str);
         for (SymbolScope i : symTableStack) {
             if (i.symTable.containsKey(str)) {
+                out.println(" found:"+i.scopeName+":"+i.symTable.get(str).type+":"+i.symTable.get(str).id);
                 return i.symTable.get(str);
             }
         }
+        out.println(" not found");
         return null;
     }
 

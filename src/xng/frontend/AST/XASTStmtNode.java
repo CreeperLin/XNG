@@ -10,12 +10,14 @@ public class XASTStmtNode extends XASTBaseNode{
     public Vector<XASTStmtNode> stmtList;
 
     public XASTStmtNode(){
-        super(null,XASTNodeID.s_none);
-        stmtList = null;
+        super(new SrcPos(1,0),XASTNodeID.s_none);
+        stmtList = new Vector<>();
     }
 
     public XASTStmtNode(SrcPos ctx, XASTNodeID type, Vector<XASTStmtNode> list){
         super(ctx,type);
         stmtList = list;
     }
+
+    public boolean isEmpty(){return nodeID==XASTNodeID.s_none;}
 }
