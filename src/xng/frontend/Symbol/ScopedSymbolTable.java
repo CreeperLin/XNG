@@ -34,7 +34,8 @@ public class ScopedSymbolTable {
     }
 
     public boolean regSymbol(String str, SymbolType type, Integer tag){
-        if (symTableStack.peek().symTable.containsKey(str) || symTableStack.elementAt(0).symTable.containsKey(str)) {
+//        if (symTableStack.peek().symTable.containsKey(str) || symTableStack.elementAt(0).symTable.containsKey(str)) {
+        if (symTableStack.peek().symTable.containsKey(str)) {
             return true;
         }
 //        if (findSymbol(str)>0) {
