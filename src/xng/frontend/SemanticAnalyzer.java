@@ -98,7 +98,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
         out.println("curFunc:"+curFuncName);
         curFuncType = new SymbolType(node.retType);
         SST.push_scope(node.name);
-        SST.regSymbol(curFuncName,SST.findSymbol(getScopeName(curFuncName)).type,0);
+        SST.regSymbol(curFuncName,SST.findSymbol(getScopeName(node.isConstructor?"__init__":curFuncName)).type,0);
         visitStmtNode(node.paramList);
         isRet = false;
         node.funcBody.stmtList.forEach(this::visitStmt);
