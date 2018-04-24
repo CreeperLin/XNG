@@ -17,7 +17,8 @@ public class ScopedSymbolTable {
         }
 
     }
-    private Stack<SymbolScope> symTableStack;
+
+    public Stack<SymbolScope> symTableStack;
     private Integer symCount=0;
     public ScopedSymbolTable(){
         symTableStack = new Stack<>();

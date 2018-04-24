@@ -59,7 +59,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
         }
         for (int i=0;i<fparams.size();++i){
             out.println("dbg param:"+fparams.elementAt(i)+" "+ftype.typeList.elementAt(i+1));
-            if (!fparams.elementAt(i).equals(ftype.typeList.elementAt(i+1))){
+            if (fparams.elementAt(i)==null || !fparams.elementAt(i).equals(ftype.typeList.elementAt(i+1))){
                 return i+1;
             }
         }
@@ -118,7 +118,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 ce.add(XCompileError.ceType.ce_type,"vardecl init:"+node.name,node);
             }
         }
-        if (SST.regSymbol(getScopeName(node.name), new SymbolType(node.type), 0)) {
+        if ((curClassName == null || curFuncName != null) && SST.regSymbol(getScopeName(node.name), new SymbolType(node.type), 0)) {
             ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
         }
     }
@@ -309,7 +309,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     } else if (t==-1){
                         ce.add(XCompileError.ceType.ce_type,"call param len:"+fparams.size()+"/"+(ftype.typeList.size()-1),node);
                     } else {
-                        ce.add(XCompileError.ceType.ce_type,"call param retType:"+fparams.elementAt(t-2),node.exprList.elementAt(1).exprList.elementAt(t-1));
+                        ce.add(XCompileError.ceType.ce_type,"call param retType:"+fparams.elementAt(t-1),node.exprList.elementAt(1).exprList.elementAt(t-1));
                     }
                 }
                 break;
@@ -362,6 +362,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 } else if (assertExprType(node.exprList.elementAt(0),SymbolType.strType)) {
                     curMemName.append("string.");
                 } else if (node.exprList.elementAt(0).type.arrayDim>0) {
+                    out.println("dbg:array mem");
 //                    curMemName.append("_array.");
                 } else {
                     ce.add(XCompileError.ceType.ce_nodecl,"not class:"+node.exprList.elementAt(0).type.declType.toString(),node);
