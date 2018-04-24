@@ -117,7 +117,7 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
             funcParams.add(type);
             System.out.println("func param:"+funcParams.size()+":"+curFuncName+":"+node.name+":"+type);
         }
-        else if (SST.symTableStack.size()>1 && SST.regSymbol(getScopeName(node.name, false), type, 0)) {
+        else if ((SST.symTableStack.size()>1||curClassName!=null) && SST.regSymbol(getScopeName(node.name, false), type, 0)) {
             ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
         }
     }
