@@ -1,13 +1,16 @@
 // Generated from /root/GitRepo/XNG/grammar/Mx.g4 by ANTLR 4.7
 package xng.antlr;
-import org.antlr.v4.runtime.atn.*;
-import org.antlr.v4.runtime.dfa.DFA;
+
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.misc.*;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.atn.ATNDeserializer;
+import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.antlr.v4.runtime.atn.PredictionContextCache;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class MxParser extends Parser {
@@ -148,11 +151,11 @@ public class MxParser extends Parser {
 			match(EOF);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -210,11 +213,11 @@ public class MxParser extends Parser {
 				break;
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -271,11 +274,11 @@ public class MxParser extends Parser {
 			match(RBB);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -333,11 +336,11 @@ public class MxParser extends Parser {
 				break;
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -390,11 +393,11 @@ public class MxParser extends Parser {
 			block();
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -471,11 +474,11 @@ public class MxParser extends Parser {
 			block();
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -527,11 +530,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -583,11 +586,11 @@ public class MxParser extends Parser {
 			match(RBB);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -645,11 +648,11 @@ public class MxParser extends Parser {
 				break;
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -870,11 +873,11 @@ public class MxParser extends Parser {
 				throw new NoViableAltException(this);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -908,11 +911,11 @@ public class MxParser extends Parser {
 			match(T__6);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -964,11 +967,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1364,11 +1367,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			unrollRecursionContexts(_parentctx);
 		}
@@ -1441,11 +1444,11 @@ public class MxParser extends Parser {
 				throw new NoViableAltException(this);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1507,11 +1510,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1597,11 +1600,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1646,11 +1649,11 @@ public class MxParser extends Parser {
 			match(RP);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1701,11 +1704,11 @@ public class MxParser extends Parser {
 
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1762,11 +1765,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1818,11 +1821,11 @@ public class MxParser extends Parser {
 				throw new NoViableAltException(this);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1852,11 +1855,11 @@ public class MxParser extends Parser {
 			match(Identifier);
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1894,11 +1897,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}
@@ -1940,11 +1943,11 @@ public class MxParser extends Parser {
 			}
 			}
 		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			_errHandler.reportError(this, re);
-			_errHandler.recover(this, re);
-		}
+//		catch (RecognitionException re) {
+//			_localctx.exception = re;
+//			_errHandler.reportError(this, re);
+//			_errHandler.recover(this, re);
+//		}
 		finally {
 			exitRule();
 		}

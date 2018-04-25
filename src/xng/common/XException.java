@@ -13,6 +13,6 @@ public class XException extends Exception {
     public XException(exType type,String msg){
 //        super(msg);
         System.err.println("XNG:"+type.toString()+":"+msg);
-        if (XParameter.verbose>0) this.printStackTrace();
+        if (XParameter.verbose > 2) this.printStackTrace();
     }
 }

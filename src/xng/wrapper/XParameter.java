@@ -46,6 +46,11 @@ public class XParameter {
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;
 //        isEnableOptimization = true;
+        System.out.println("XParam:semantic check:" + isEnableSemanticCheck);
+        System.out.println("XParam:IR gen:" + isEnableIR);
+        System.out.println("XParam:opt:" + isEnableOptimization);
+        System.out.println("XParam:assembly:" + isEnableAssembly);
+        System.out.println("XParam:verbose level:" + verbose);
     }
 
 }

@@ -12,6 +12,7 @@ import xng.frontend.AST.XASTCUNode;
 import xng.frontend.GlobalScopeBuilder;
 import xng.frontend.SemanticAnalyzer;
 import xng.frontend.Symbol.ScopedSymbolTable;
+import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
 
 import java.io.BufferedReader;
@@ -23,7 +24,8 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 
 public class XWrapper {
-    private static void fatalError() throws Exception {
+    private static void fatalError(XCompileError ce) throws Exception {
+        if (ce != null) ce.print();
         err.println("XNG:fatal error");
         throw new Exception("XNG:fatal error");
 //        exit(1);
@@ -34,7 +36,7 @@ public class XWrapper {
         try {
             params = new XParameter(args);
         } catch (XException e){
-            fatalError();
+            fatalError(null);
             return;
         }
         ANTLRFileStream input;
@@ -50,9 +52,10 @@ public class XWrapper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            fatalError();
+            fatalError(null);
             return;
         }
+        XCompileError compileError = new XCompileError(srcLines);
         MxParser.CompilationUnitContext tree;
         MxParser parser;
         try {
@@ -61,7 +64,8 @@ public class XWrapper {
             parser = new MxParser(tokens);
             tree = parser.compilationUnit();
         } catch (RecognitionException e){
-            fatalError();
+            compileError.add(XCompileError.ceType.ce_syntax, e.toString(), new SrcPos(e.getOffendingToken()), true);
+            fatalError(compileError);
             return;
         }
 //        out.println(tree.toStringTree(parser));
@@ -72,13 +76,11 @@ public class XWrapper {
         XASTPrinter printer = new XASTPrinter();
         printer.visitCUNode(prog);
 
-        XCompileError compileError = new XCompileError(srcLines);
         ScopedSymbolTable SST = new ScopedSymbolTable();
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
-        compileError.print();
         if (compileError.errorCount>0){
-            fatalError();
+            fatalError(compileError);
             return;
         }
         out.println("XNG:end");

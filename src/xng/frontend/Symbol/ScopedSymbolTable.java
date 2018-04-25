@@ -49,10 +49,11 @@ public class ScopedSymbolTable {
 
     public SymbolID findSymbol(String str){
         out.print("sym find:"+str);
-        for (SymbolScope i : symTableStack) {
-            if (i.symTable.containsKey(str)) {
-                out.println(" found:"+i.scopeName+":"+i.symTable.get(str).type+":"+i.symTable.get(str).id);
-                return i.symTable.get(str);
+        for (int i = symTableStack.size() - 1; i >= 0; --i) {
+            SymbolScope t = symTableStack.elementAt(i);
+            if (t.symTable.containsKey(str)) {
+                out.println(" found:" + t.scopeName + ":" + t.symTable.get(str).type + ":" + t.symTable.get(str).id);
+                return t.symTable.get(str);
             }
         }
         out.println(" not found");

@@ -2,7 +2,9 @@ package xng.frontend;
 
 import xng.common.XCompileError;
 import xng.frontend.AST.*;
-import xng.frontend.Symbol.*;
+import xng.frontend.Symbol.ScopedSymbolTable;
+import xng.frontend.Symbol.SymbolID;
+import xng.frontend.Symbol.SymbolType;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -357,13 +359,13 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 break;
             case e_mem:
                 visitExpr(node.exprList.elementAt(0));
-                if (node.exprList.elementAt(0).type !=null && assertExprType(node.exprList.elementAt(0),SymbolType.typType.CLASS)) {
+                if (node.exprList.elementAt(0).type.arrayDim > 0) {
+                    out.println("dbg:array mem");
+//                    curMemName.append("_array.");
+                } else if (node.exprList.elementAt(0).type != null && assertExprType(node.exprList.elementAt(0), SymbolType.typType.CLASS)) {
                     curMemName.append(node.exprList.elementAt(0).type.className).append('.');
                 } else if (assertExprType(node.exprList.elementAt(0),SymbolType.strType)) {
                     curMemName.append("string.");
-                } else if (node.exprList.elementAt(0).type.arrayDim>0) {
-                    out.println("dbg:array mem");
-//                    curMemName.append("_array.");
                 } else {
                     ce.add(XCompileError.ceType.ce_nodecl,"not class:"+node.exprList.elementAt(0).type.declType.toString(),node);
                     break;
