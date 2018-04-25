@@ -451,7 +451,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
             SymbolID classSym = SST.findSymbol(node.ctype.className);
             if (classSym == null) {
                 ce.add(XCompileError.ceType.ce_nodecl,"class creator:"+node.ctype.className,node);
-            } else if (node.exprList != null) {
+            } else if (node.exprList != null && node.exprList.size()>0) {
                 Vector<SymbolType> plist = new Vector<>();
                 node.exprList.forEach(i->{
                     visitExpr(i);
