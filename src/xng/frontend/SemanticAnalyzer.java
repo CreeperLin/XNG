@@ -265,12 +265,15 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     ce.add(XCompileError.ceType.ce_type,node.nodeID.toString()+":"+node.exprList.firstElement().type,node);
                 }
                 break;
+            case e_inc_s:
+            case e_dec_s:
+                if (!checkLv(node.exprList.firstElement())) {
+                    ce.add(XCompileError.ceType.ce_lvalue, node.nodeID.toString(), node);
+                }
             case e_pos:
             case e_neg:
             case e_inc_p:
-            case e_inc_s:
             case e_dec_p:
-            case e_dec_s:
                 if (assertExprType(node.exprList.elementAt(0),SymbolType.intType)){
                     node.type = SymbolType.intType;
                 } else {
@@ -435,12 +438,15 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
 
     public void visitCreatorNode(XASTCreatorNode node){
         if (node.ctype.dim > 0){
-            node.exprList.forEach(i->{
+            boolean empty = false;
+            for (XASTExprNode i : node.exprList) {
                 visitExpr(i);
-                if (!i.type.equals(SymbolType.intType)){
-                    ce.add(XCompileError.ceType.ce_type,"creator:idx:"+i.type.declType.toString(),i);
+                if (i.isEmpty()) {
+                    empty = true;
+                } else if (empty || !i.type.equals(SymbolType.intType)) {
+                    ce.add(XCompileError.ceType.ce_type, "creator:idx:" + i.type, i);
                 }
-            });
+            }
         } else {
             SymbolID classSym = SST.findSymbol(node.ctype.className);
             if (classSym == null) {

@@ -4,6 +4,8 @@ import xng.common.XException;
 
 import java.util.Vector;
 
+import static java.lang.System.out;
+
 public class XParameter {
 
     Vector<String> srcPath = new Vector<>();
@@ -46,11 +48,12 @@ public class XParameter {
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;
 //        isEnableOptimization = true;
-        System.out.println("XParam:semantic check:" + isEnableSemanticCheck);
-        System.out.println("XParam:IR gen:" + isEnableIR);
-        System.out.println("XParam:opt:" + isEnableOptimization);
-        System.out.println("XParam:assembly:" + isEnableAssembly);
-        System.out.println("XParam:verbose level:" + verbose);
+        out.println("XParam:semantic check:" + isEnableSemanticCheck);
+        out.println("XParam:IR gen:" + isEnableIR);
+        out.println("XParam:opt:" + isEnableOptimization);
+        out.println("XParam:assembly:" + isEnableAssembly);
+        out.println("XParam:verbose level:" + verbose);
+        out.println("src filename:" + srcPath);
     }
 
 }

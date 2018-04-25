@@ -78,10 +78,10 @@ expression
     |   expression op='(' exprList? ')'
     |   expression op=('++'|'--')
 
+    |   <assoc=right> op='new' creator
     |   <assoc=right> op=('~'|'!') expression
     |   <assoc=right> op=('++'|'--') expression
     |   <assoc=right> op=('+'|'-') expression
-    |   <assoc=right> op='new' creator
 
     |   expression op=('*'|'/'|'%') expression
     |   expression op=('+'|'-') expression
@@ -118,7 +118,12 @@ creator
     ;
 
 arrayInit
-    :   LB expression RB (LB expression RB)* (LB RB)*
+    :   arrayDimInit*
+//    :   LB expression RB (LB expression? RB)*
+    ;
+
+arrayDimInit
+    :   LB expression? RB
     ;
 
 classInit

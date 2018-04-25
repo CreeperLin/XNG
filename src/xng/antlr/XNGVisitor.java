@@ -6,7 +6,8 @@ import xng.frontend.Symbol.SrcPos;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     private MxParser t;
@@ -17,11 +18,9 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
 
     @Override public XASTCUNode visitCompilationUnit(MxParser.CompilationUnitContext ctx) {
         if (ctx==null) return null;
-        out.println("compilation begin");
-        XASTCUNode prog = new XASTCUNode(new SrcPos(ctx),
+        out.println("begin AST Building");
+        return new XASTCUNode(new SrcPos(ctx),
                 ctx.progSection().stream().map(this::visitProgSection).collect(Collectors.toCollection(Vector::new)));
-        out.println("compilation terminated");
-        return prog;
     }
 
     @Override public XASTStmtNode visitProgSection(MxParser.ProgSectionContext ctx) {
@@ -34,7 +33,6 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     @Override public XASTStmtNode visitClassDecl(MxParser.ClassDeclContext ctx) {
         if (ctx==null) return null;
         String curClassName = ctx.Identifier().toString();
-        out.println("class name:" + curClassName);
         return new XASTClassDeclNode(new SrcPos(ctx.Identifier().getSymbol()),curClassName,
                 ctx.classBodyDecl().stream().map(this::visitClassBodyDecl).collect(Collectors.toCollection(Vector::new)));
     }
@@ -275,18 +273,23 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
         if (ctx.arrayInit()!=null){
             XASTTypeNode type = visitNonArrayType(ctx.nonArrayType());
             XASTExprNode expr = visitArrayInit(ctx.arrayInit());
-            type.dim = ctx.arrayInit().LB().size();
+            type.dim = ctx.arrayInit().arrayDimInit().size();
             return new XASTCreatorNode(new SrcPos(ctx),type,expr);
         }
         return new XASTCreatorNode(new SrcPos(ctx),visitNonArrayType(ctx.nonArrayType()),null);
     }
 
     @Override public XASTExprNode visitArrayInit(MxParser.ArrayInitContext ctx) {
-        Vector<XASTExprNode> v = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toCollection(Vector::new));
+        Vector<XASTExprNode> v = ctx.arrayDimInit().stream().map(this::visitArrayDimInit).collect(Collectors.toCollection(Vector::new));
 //        for (int i = 0; i<ctx.LB().size()-ctx.expression().size(); ++i){
 //            v.add(new XASTExprNode());
 //        }
         return new XASTExprNode(new SrcPos(ctx),XASTNodeID.e_list,v);
+    }
+
+    @Override
+    public XASTExprNode visitArrayDimInit(MxParser.ArrayDimInitContext ctx) {
+        return visitExpression(ctx.expression());
     }
 
     @Override public XASTExprNode visitClassInit(MxParser.ClassInitContext ctx) {
@@ -296,7 +299,7 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
     @Override public XASTVarDeclNode visitVarDecl(MxParser.VarDeclContext ctx) {
         if (ctx==null) return null;
         String varName = ctx.Identifier().getSymbol().getText();
-        out.println("varDecl: "+varName);
+//        out.println("varDecl: "+varName);
         return new XASTVarDeclNode(new SrcPos(ctx.Identifier().getSymbol()),varName, visitType(ctx.type()), visitExpression(ctx.expression()));
     }
 
@@ -311,11 +314,11 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
         XASTNodeID type = null;
         String className = null;
         if (ctx.classType()!=null) {
-            out.println("class retType");
+//            out.println("class retType");
             type = XASTNodeID.t_class;
             className = ctx.classType().Identifier().getSymbol().getText();
         } else if (ctx.primType()!=null) {
-            out.println("prim retType");
+//            out.println("prim retType");
             switch (ctx.primType().getText()) {
                 case "bool":
                     type = XASTNodeID.t_bool;
@@ -347,12 +350,12 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
         }
         if (ctx.StrLiteral() != null){
             String t = ctx.StrLiteral().getSymbol().getText();
-            out.println("strLiteral:\""+t+"\"");
+//            out.println("strLiteral:\""+t+"\"");
             return new XASTPrimNode(new SrcPos(ctx.StrLiteral()),XASTNodeID.p_lit_str, 0, t);
         }
         if (ctx.IntLiteral() != null){
             int t = Integer.parseInt(ctx.IntLiteral().getSymbol().getText());
-            out.println("intLiteral:"+t);
+//            out.println("intLiteral:"+t);
             return new XASTPrimNode(new SrcPos(ctx.IntLiteral()),XASTNodeID.p_lit_int, t, null);
         }
         if (ctx.NullLiteral() != null) {

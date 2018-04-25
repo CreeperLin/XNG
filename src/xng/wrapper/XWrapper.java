@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import xng.antlr.MxLexer;
 import xng.antlr.MxParser;
+import xng.antlr.XNGErrorListener;
 import xng.antlr.XNGVisitor;
 import xng.common.XCompileError;
 import xng.common.XException;
@@ -41,7 +42,6 @@ public class XWrapper {
         }
         ANTLRFileStream input;
         String srcPath = params.srcPath.elementAt(0);
-        out.println("src filename:" + srcPath);
         Vector<String> srcLines = new Vector<>();
         try {
             input = new ANTLRFileStream(srcPath);
@@ -62,9 +62,17 @@ public class XWrapper {
             MxLexer lexer = new MxLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             parser = new MxParser(tokens);
+            XNGErrorListener listener = new XNGErrorListener(compileError);
+            parser.removeErrorListeners();
+            parser.addErrorListener(listener);
             tree = parser.compilationUnit();
         } catch (RecognitionException e){
             compileError.add(XCompileError.ceType.ce_syntax, e.toString(), new SrcPos(e.getOffendingToken()), true);
+            fatalError(compileError);
+            return;
+        }
+
+        if (compileError.errorCount > 0) {
             fatalError(compileError);
             return;
         }
