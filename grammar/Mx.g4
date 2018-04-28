@@ -206,6 +206,7 @@ LBB
 RBB
     : '}' ;
 
-COMMENT : '//'.*?'\r'?'\n' -> skip ;
+SL_COMMENT : '//'.*?'\r'?'\n' -> skip ;
+COMMENT : '/*' .*? '*/' -> skip ;
 NEWLINE : ('\r'?'\n')+ -> skip ;
 WS : (' '|'\t'|'\n')+ -> channel(HIDDEN);
