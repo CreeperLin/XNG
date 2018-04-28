@@ -3,6 +3,7 @@ package xng.wrapper;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
+import xng.XIR.XCFG;
 import xng.antlr.MxLexer;
 import xng.antlr.MxParser;
 import xng.antlr.XNGErrorListener;
@@ -15,6 +16,7 @@ import xng.frontend.SemanticAnalyzer;
 import xng.frontend.Symbol.ScopedSymbolTable;
 import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
+import xng.frontend.XIRGenerator;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,8 +27,15 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 
 public class XWrapper {
-    private static void fatalError(XCompileError ce) throws Exception {
-        if (ce != null) ce.print();
+
+    private static void checkError(XCompileError ce) throws Exception{
+        if (ce != null && ce.errorCount>0){
+            ce.print();
+            fatalError();
+        }
+    }
+
+    private static void fatalError() throws Exception {
         err.println("XNG:fatal error");
         throw new Exception("XNG:fatal error");
 //        exit(1);
@@ -37,7 +46,7 @@ public class XWrapper {
         try {
             params = new XParameter(args);
         } catch (XException e){
-            fatalError(null);
+            fatalError();
             return;
         }
         ANTLRFileStream input;
@@ -52,12 +61,12 @@ public class XWrapper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            fatalError(null);
+            fatalError();
             return;
         }
         XCompileError compileError = new XCompileError(srcLines);
-        MxParser.CompilationUnitContext tree;
-        MxParser parser;
+        MxParser.CompilationUnitContext tree=null;
+        MxParser parser=null;
         try {
             MxLexer lexer = new MxLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -68,18 +77,12 @@ public class XWrapper {
             tree = parser.compilationUnit();
         } catch (RecognitionException e){
             compileError.add(XCompileError.ceType.ce_syntax, e.toString(), new SrcPos(e.getOffendingToken()), true);
-            fatalError(compileError);
-            return;
         }
 
-        if (compileError.errorCount > 0) {
-            fatalError(compileError);
-            return;
-        }
+        checkError(compileError);
 //        out.println(tree.toStringTree(parser));
 
-        XNGVisitor ASTExtractor = new XNGVisitor(parser);
-        XASTCUNode prog = ASTExtractor.visitCompilationUnit(tree);
+        XASTCUNode prog = new XNGVisitor(parser).visitCompilationUnit(tree);
 
         XASTPrinter printer = new XASTPrinter();
         printer.visitCUNode(prog);
@@ -87,10 +90,11 @@ public class XWrapper {
         ScopedSymbolTable SST = new ScopedSymbolTable();
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
-        if (compileError.errorCount>0){
-            fatalError(compileError);
-            return;
-        }
+        checkError(compileError);
+
+        XCFG cfg = new XCFG();
+        new XIRGenerator(cfg).visitCUNode(prog);
+
         out.println("XNG:end");
     }
 }
