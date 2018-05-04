@@ -10,10 +10,10 @@ public class XParameter {
 
     Vector<String> srcPath = new Vector<>();
 
-    public static boolean isEnableSemanticCheck;
-    public static boolean isEnableIR;
-    public static boolean isEnableOptimization;
-    public static boolean isEnableAssembly;
+    public static boolean isEnableSemanticCheck = true;
+    public static boolean isEnableIR = true;
+    public static boolean isEnableOptimization = true;
+    public static boolean isEnableAssembly = true;
     public static int verbose = 0;
 
     XParameter(String[] args) throws XException {

@@ -27,7 +27,7 @@ public class XASTBaseVisitor implements XASTVisitor {
     public void visitExpr(XASTExprNode node) {
         if (node==null) return;
         if (node instanceof XASTPrimNode) visitPrimNode((XASTPrimNode)node);
-        if (node instanceof XASTCreatorNode) visitCreatorNode((XASTCreatorNode)node);
+        else if (node instanceof XASTCreatorNode) visitCreatorNode((XASTCreatorNode)node);
         else visitExprNode(node);
 //        System.out.println("debug:expr:"+node.nodeID.toString());
     }

@@ -43,7 +43,7 @@ public class XCompileError {
     }
 
     public void print(){
-        if (XParameter.verbose > 1) msgList.forEach(System.out::println);
+        if (XParameter.verbose > 1) msgList.forEach(System.err::println);
         System.out.println("XNG:"+ errorCount+" error(s), "+warningCount+" warning(s)");
     }
 

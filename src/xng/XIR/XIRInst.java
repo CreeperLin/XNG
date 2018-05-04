@@ -8,8 +8,8 @@ public class XIRInst {
         op_sub,op_pos,op_mult,op_div,
         op_mod,op_not,op_neg,op_and,op_or,
         op_xor,op_shl,op_shr,op_mov,
-        op_eq,op_ne,op_le,op_ge,op_dec,op_inc,op_jmp,op_jcc,
-        op_gt,op_lt,op_ret,op_syscall,
+        op_eq,op_ne,op_le,op_ge,op_dec,op_inc,op_jcc,
+        op_phi,op_gt,op_lt,op_ret,
     };
     public opType op;
     public Vector<XIRInstAddr> oprList;
@@ -22,5 +22,13 @@ public class XIRInst {
     public XIRInst(opType _op, Vector<XIRInstAddr> _opr){
         op = _op;
         oprList = _opr;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder(op.toString().toUpperCase());
+        str.append(' ');
+        oprList.forEach(str::append);
+        return str.toString();
     }
 }

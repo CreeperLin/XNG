@@ -50,6 +50,11 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 return true;
             case e_mem:
                 return checkLv(node.exprList.elementAt(1));
+            case e_dec_p:
+            case e_inc_p:
+                return true;
+//            case e_dec_s:
+//            case e_inc_s:
         }
         return false;
     }
@@ -229,7 +234,6 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
             case e_gt:
             case e_le:
             case e_lt:
-            case e_ne:
                 if ((assertExprType(node.exprList.elementAt(0),SymbolType.strType)&&
                     assertExprType(node.exprList.elementAt(1),SymbolType.strType))||
                         (assertExprType(node.exprList.elementAt(0),SymbolType.intType)&&
@@ -267,13 +271,13 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 break;
             case e_inc_s:
             case e_dec_s:
+            case e_inc_p:
+            case e_dec_p:
                 if (!checkLv(node.exprList.firstElement())) {
-                    ce.add(XCompileError.ceType.ce_lvalue, node.nodeID.toString(), node);
+                        ce.add(XCompileError.ceType.ce_lvalue, node.nodeID.toString(), node);
                 }
             case e_pos:
             case e_neg:
-            case e_inc_p:
-            case e_dec_p:
                 if (assertExprType(node.exprList.elementAt(0),SymbolType.intType)){
                     node.type = SymbolType.intType;
                 } else {
@@ -329,15 +333,23 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 }
                 break;
             case e_eq:
+            case e_ne:
                 if (node.exprList.elementAt(0).type.equals(node.exprList.elementAt(1).type)){
                     out.println("equal expr:");
                     node.type = SymbolType.boolType;
                 } else if (node.exprList.elementAt(0).type.declType==SymbolType.typType.NULL
-                        ||node.exprList.elementAt(0).type.declType==SymbolType.typType.NULL){
-                    node.type = SymbolType.boolType;
-                    out.println("equal null expr:"+node.type.declType.toString());
+                        ||node.exprList.elementAt(1).type.declType==SymbolType.typType.NULL){
+                    XASTExprNode nonNullExpr = node.exprList.elementAt(0);
+                    if (nonNullExpr.type.declType==SymbolType.typType.NULL) nonNullExpr = node.exprList.elementAt(1);
+                    if (nonNullExpr.type.arrayDim>0
+                            || assertExprType(nonNullExpr,SymbolType.typType.CLASS)) {
+                        node.type = SymbolType.boolType;
+                    }
+                    else{
+                        ce.add(XCompileError.ceType.ce_type,node.nodeID.toString()+" null",node);
+                    }
                 } else {
-                    ce.add(XCompileError.ceType.ce_type,"equal",node);
+                    ce.add(XCompileError.ceType.ce_type,node.nodeID.toString()+" type",node);
                 }
                 break;
             case e_land:

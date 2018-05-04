@@ -14,8 +14,14 @@ public class XIRInstAddr {
         lit2 = _l2;
     }
 
-    static int regCount = 0;
+    static int regCount = 1;
     public static XIRInstAddr newRegAddr(){
-        return new XIRInstAddr(addrType.a_reg,++regCount,0);
+        System.out.println("XIRInstAddr:new reg:"+regCount);
+        return new XIRInstAddr(addrType.a_reg,regCount++,0);
+    }
+
+    @Override
+    public String toString() {
+        return "("+type.toString()+' '+lit1+' '+lit2+") ";
     }
 }

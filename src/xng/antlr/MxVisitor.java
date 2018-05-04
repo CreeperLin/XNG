@@ -107,19 +107,17 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArrayInit(MxParser.ArrayInitContext ctx);
 	/**
-     * Visit a parse tree produced by {@link MxParser#arrayDimInit}.
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    T visitArrayDimInit(MxParser.ArrayDimInitContext ctx);
-
-    /**
-     * Visit a parse tree produced by {@link MxParser#classInit}.
-     *
-     * @param ctx the parse tree
-     * @return the visitor result
-     */
-    T visitClassInit(MxParser.ClassInitContext ctx);
+	 * Visit a parse tree produced by {@link MxParser#arrayDimInit}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayDimInit(MxParser.ArrayDimInitContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MxParser#classInit}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassInit(MxParser.ClassInitContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MxParser#varDecl}.
 	 * @param ctx the parse tree

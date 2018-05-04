@@ -1,6 +1,7 @@
 package xng.frontend.AST;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import xng.XIR.XCFGNode;
 import xng.frontend.Symbol.SrcPos;
 
 import java.util.Vector;
@@ -8,6 +9,8 @@ import java.util.Vector;
 public class XASTStmtNode extends XASTBaseNode{
 
     public Vector<XASTStmtNode> stmtList;
+    public XCFGNode startNode = null;
+    public XCFGNode endNode = null;
 
     public XASTStmtNode(){
         super(new SrcPos(1,0),XASTNodeID.s_none);

@@ -1,12 +1,14 @@
 package xng.frontend.AST;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import xng.XIR.XIRInstAddr;
 import xng.frontend.Symbol.SrcPos;
 
 public class XASTVarDeclNode extends XASTStmtNode{
     public String name;
     public XASTTypeNode type;
     public XASTExprNode initExpr;
+    public XIRInstAddr reg = null;
 
     public XASTVarDeclNode(SrcPos ctx, String _n, XASTTypeNode _t, XASTExprNode _e){
         super(ctx ,XASTNodeID.s_vardecl,null);

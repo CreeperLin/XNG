@@ -92,8 +92,11 @@ public class XWrapper {
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
         checkError(compileError);
 
-        XCFG cfg = new XCFG();
-        new XIRGenerator(cfg).visitCUNode(prog);
+        if (params.isEnableIR) {
+            XCFG cfg = new XCFG();
+            new XIRGenerator(cfg,SST).visitCUNode(prog);
+            cfg.print();
+        }
 
         out.println("XNG:end");
     }

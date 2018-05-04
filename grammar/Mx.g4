@@ -114,7 +114,7 @@ primary
     ;
 
 creator
-    :   nonArrayType (arrayInit|classInit?)
+    :   nonArrayType (classInit|arrayInit)
     ;
 
 arrayInit
@@ -145,7 +145,7 @@ nonArrayType
     ;
 
 classType
-    : Identifier
+    :   Identifier
     ;
 
 primType
