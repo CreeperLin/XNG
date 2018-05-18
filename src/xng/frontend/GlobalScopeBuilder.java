@@ -30,37 +30,37 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         SST.push_scope("global");
         Vector<SymbolType> plist = new Vector<>();
         plist.add(SymbolType.intType);
-        SST.regSymbol("size",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("size",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.voidType);
         plist.add(SymbolType.strType);
-        SST.regSymbol("println",new SymbolType(new Vector<>(plist)),0);
-        SST.regSymbol("print",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("println",new SymbolType(new Vector<>(plist)),0, node);
+        SST.regSymbol("print",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.strType);
-        SST.regSymbol("getString",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("getString",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.intType);
-        SST.regSymbol("getInt",new SymbolType(new Vector<>(plist)),0);
-        plist.clear();
-        plist.add(SymbolType.strType);
-        plist.add(SymbolType.intType);
-        SST.regSymbol("toString",new SymbolType(new Vector<>(plist)),0);
-        plist.clear();
-        plist.add(SymbolType.intType);
-        SST.regSymbol("string.length",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("getInt",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.strType);
         plist.add(SymbolType.intType);
-        plist.add(SymbolType.intType);
-        SST.regSymbol("string.substring",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("toString",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.intType);
-        SST.regSymbol("string.parseInt",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("string.length",new SymbolType(new Vector<>(plist)),0, node);
+        plist.clear();
+        plist.add(SymbolType.strType);
+        plist.add(SymbolType.intType);
+        plist.add(SymbolType.intType);
+        SST.regSymbol("string.substring",new SymbolType(new Vector<>(plist)),0, node);
+        plist.clear();
+        plist.add(SymbolType.intType);
+        SST.regSymbol("string.parseInt",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
         plist.add(SymbolType.intType);
         plist.add(SymbolType.intType);
-        SST.regSymbol("string.ord",new SymbolType(new Vector<>(plist)),0);
+        SST.regSymbol("string.ord",new SymbolType(new Vector<>(plist)),0, node);
         node.declList.forEach(this::visitStmt);
 
         SymbolID symMain = SST.findSymbol("main");
@@ -73,9 +73,7 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
 
     @Override
     public void visitClassDeclNode(XASTClassDeclNode node) {
-        if (SST.regSymbol(node.name, new SymbolType(SymbolType.typType.CLASS, node.name, 0,new Vector<>()), 0)){
-            ce.add(XCompileError.ceType.ce_redef,"class:"+node.name,node);
-        }
+        SST.regSymbol(node.name, new SymbolType(SymbolType.typType.CLASS, node.name, 0,new Vector<>()), 0, node);
         curClassName=node.name;
         System.out.println("classdecl:"+curClassName);
         node.stmtList.forEach(this::visitStmt);
@@ -94,19 +92,13 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         if (node.isConstructor) {
             System.out.println("found constructor:");
             if (node.name.equals(curClassName)){
-                if (SST.regSymbol(getScopeName(node.name, true), type, 0)) {
-                    ce.add(XCompileError.ceType.ce_default,"unexpected error",node);
-                }
+                SST.regSymbol(getScopeName(node.name, true), type, 0, node);
                 SymbolID curClass = SST.findSymbol(curClassName);
                 curClass.type.typeList.add(type);
             } else {
                 ce.add(XCompileError.ceType.ce_invalid_constructor,"unidentical identifier:"+curClassName,node);
             }
-        } else {
-            if (SST.regSymbol(getScopeName(node.name, false), type, 0)){
-                ce.add(XCompileError.ceType.ce_redef,"func:"+node.name,node);
-            }
-        }
+        } else node.startNode = SST.regSymbol(getScopeName(node.name, false), type, 0, node).startNode;
     }
 
     @Override
@@ -117,9 +109,8 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
             funcParams.add(type);
             System.out.println("func param:"+funcParams.size()+":"+curFuncName+":"+node.name+":"+type);
         }
-        else if ((SST.symTableStack.size()>1||curClassName!=null) && SST.regSymbol(getScopeName(node.name, false), type, 0)) {
-            ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
-        }
+        else if (SST.symTableStack.size()>1||curClassName!=null)
+            SST.regSymbol(getScopeName(node.name, false), type, 0, curClassName,null,node);
     }
 
     @Override

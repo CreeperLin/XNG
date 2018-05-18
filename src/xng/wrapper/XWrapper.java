@@ -8,6 +8,9 @@ import xng.antlr.MxLexer;
 import xng.antlr.MxParser;
 import xng.antlr.XNGErrorListener;
 import xng.antlr.XNGVisitor;
+import xng.backend.ASMGenerator;
+import xng.backend.NASM.NASMGenerator;
+import xng.backend.StackAllocator;
 import xng.common.XCompileError;
 import xng.common.XException;
 import xng.frontend.AST.XASTCUNode;
@@ -17,10 +20,9 @@ import xng.frontend.Symbol.ScopedSymbolTable;
 import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
 import xng.frontend.XIRGenerator;
+import xng.opt.XCFGReduce;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Vector;
 
 import static java.lang.System.err;
@@ -42,15 +44,14 @@ public class XWrapper {
     }
 
     public static void main(String[] args) throws Exception {
-        XParameter params;
         try {
-            params = new XParameter(args);
+            XParameter.accept(args);
         } catch (XException e){
             fatalError();
             return;
         }
         ANTLRFileStream input;
-        String srcPath = params.srcPath.elementAt(0);
+        String srcPath = XParameter.srcPath.elementAt(0);
         Vector<String> srcLines = new Vector<>();
         try {
             input = new ANTLRFileStream(srcPath);
@@ -64,6 +65,8 @@ public class XWrapper {
             fatalError();
             return;
         }
+        if(!XParameter.isEnableSemanticCheck) return;
+
         XCompileError compileError = new XCompileError(srcLines);
         MxParser.CompilationUnitContext tree=null;
         MxParser parser=null;
@@ -83,21 +86,46 @@ public class XWrapper {
 //        out.println(tree.toStringTree(parser));
 
         XASTCUNode prog = new XNGVisitor(parser).visitCompilationUnit(tree);
+        XCFG cfg = new XCFG();
 
         XASTPrinter printer = new XASTPrinter();
         printer.visitCUNode(prog);
 
-        ScopedSymbolTable SST = new ScopedSymbolTable();
+        ScopedSymbolTable SST = new ScopedSymbolTable(cfg,compileError);
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);
         new SemanticAnalyzer(SST,compileError).visitCUNode(prog);
         checkError(compileError);
 
-        if (params.isEnableIR) {
-            XCFG cfg = new XCFG();
-            new XIRGenerator(cfg,SST).visitCUNode(prog);
-            cfg.print();
+        if (!XParameter.isEnableIR) return;
+
+        new XIRGenerator(cfg,SST).visitCUNode(prog);
+//        cfg.print();
+
+        new XCFGReduce(cfg);
+        cfg.print();
+
+        if (!XParameter.isEnableAssembly) return;
+
+        new StackAllocator(cfg);
+        cfg.print();
+
+        BufferedWriter bw;
+        try{
+            bw = new BufferedWriter(new FileWriter(XParameter.outPath));
+        } catch (IOException e){
+            e.printStackTrace();
+            fatalError();
+            return;
+        }
+        ASMGenerator ASMGen = new ASMGenerator(bw);
+        new NASMGenerator(ASMGen,cfg);
+
+        if (ASMGen.isError){
+            fatalError();
+            return;
         }
 
+        bw.close();
         out.println("XNG:end");
     }
 }

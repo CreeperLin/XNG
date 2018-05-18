@@ -8,17 +8,17 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class XCompileError {
-    public void add(ceType type, String msg, XASTBaseNode node, boolean isError) {
-        add(type, msg, node.pos, isError);
-    }
     public int errorCount = 0;
     private int warningCount = 0;
     HashMap<ceType,String> errDesc = new HashMap<>();
     private Vector<String> srcLines;
     private Vector<String> msgList = new Vector<>();
-
     public XCompileError(Vector<String> sl){
         srcLines = sl;
+    }
+
+    public void add(ceType type, String msg, XASTBaseNode node, boolean isError) {
+        add(type, msg, node.pos, isError);
     }
 
     public void add(ceType type, String msg, XASTBaseNode node){
@@ -37,7 +37,7 @@ public class XCompileError {
             m.append('~');
         }
         msgList.add(m.toString());
-        if (isError) ++errorCount;
+        if (XParameter.isWarningError || isError) ++errorCount;
         else ++warningCount;
         System.out.println(m.toString());
     }
@@ -59,5 +59,6 @@ public class XCompileError {
         ce_lvalue,
 
         cw_noreturn,
+        cw_shadow,
     }
 }

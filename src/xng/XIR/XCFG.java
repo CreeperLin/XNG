@@ -1,11 +1,11 @@
 package xng.XIR;
 
-import java.util.HashSet;
-import java.util.Vector;
+import java.util.*;
 
 public class XCFG {
 //    Vector<XCFGNode> nodes = new Vector<>();
     HashSet<XCFGNode> nodes = new HashSet<>();
+    public Vector<XCFGNode> globalNodes = new Vector<>();
     public XCFGNode entryNode = null;
 
     public XCFG(){}
@@ -22,10 +22,57 @@ public class XCFG {
         return n;
     }
 
+    public XCFGNode getNode(int id){
+        for (XCFGNode i : nodes) {
+            if (i.nodeID == id) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    public XCFGNode mergeNode(XCFGNode n1, XCFGNode n2){
+//        XCFGNode newNode = addNode();
+        System.out.println("XCFG:merging "+n1.nodeID+' '+n2.nodeID);
+        n1.nextNode.clear();
+        n1.nextNode.addAll(n2.nextNode);
+//        n1.prevNode.addAll(n2.prevNode);
+//        n2.prevNode.clear();
+//        n2.prevNode.addAll(n1.prevNode);
+        n1.instList.addAll(n2.instList);
+        for (XCFGNode i : n2.nextNode) {
+            i.prevNode.remove(n2);
+            i.prevNode.add(n1);
+        }
+        for (XCFGNode i : n2.prevNode) {
+            if (i.nodeID!=n1.nodeID){
+                i.nextNode.remove(n2);
+                i.nextNode.add(n1);
+                n1.prevNode.add(i);
+            }
+        }
+//        nodes.remove(n1);
+        nodes.remove(n2);
+        return n1;
+    }
+
     public void print(){
         if (entryNode == null) return;
-        System.out.println("XCFG print:");
-        entryNode.printGraph();
+        System.out.println("### XCFG print:"+entryNode.nodeID);
+        HashSet<Integer> visitFlag = new HashSet<>();
+        ArrayDeque<XCFGNode> q = new ArrayDeque<>();
+        q.add(entryNode);
+        globalNodes.forEach(q::add);
+        while(!q.isEmpty()){
+            XCFGNode cur = q.peek();
+            if (cur==null||visitFlag.contains(cur.nodeID)){
+                q.pop();
+                continue;
+            }
+            visitFlag.add(cur.nodeID);
+            System.out.println(cur);
+            q.addAll(cur.nextNode);
+        }
     }
 
 }

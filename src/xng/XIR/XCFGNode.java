@@ -4,13 +4,20 @@ import java.util.Vector;
 
 public class XCFGNode {
 
-    int nodeID;
-    Vector<XIRInst> instList = new Vector<>();
-    Vector<XCFGNode> prevNode = new Vector<>();
-    Vector<XCFGNode> nextNode = new Vector<>();
+    public int nodeID;
+    public String name = null;
+    public Vector<XIRInst> instList = new Vector<>();
+    public Vector<XCFGNode> prevNode = new Vector<>();
+    public Vector<XCFGNode> nextNode = new Vector<>();
 
     public XCFGNode(int _nodeID) {
         nodeID = _nodeID;
+    }
+
+    public XIRInst addInst(XIRInst.opType type) {
+        XIRInst i = new XIRInst(type);
+        instList.add(i);
+        return i;
     }
 
     public void addInst(XIRInst _inst) {
@@ -60,9 +67,9 @@ public class XCFGNode {
         instList.forEach(i-> sb.append(i).append("\n|"));
         return sb.toString();
     }
-
-    public void printGraph() {
-        System.out.println(this);
-        nextNode.forEach(XCFGNode::printGraph);
-    }
+//
+//    public void printGraph() {
+//        System.out.println(this);
+//        nextNode.forEach(XCFGNode::printGraph);
+//    }
 }

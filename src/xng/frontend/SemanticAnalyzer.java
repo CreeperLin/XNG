@@ -105,7 +105,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
         out.println("curFunc:"+curFuncName);
         curFuncType = new SymbolType(node.retType);
         SST.push_scope(node.name);
-        SST.regSymbol(curFuncName,SST.findSymbol(getScopeName(node.isConstructor?"__init__":curFuncName)).type,0);
+        SST.regSymbol(curFuncName,SST.findSymbol(getScopeName(node.isConstructor?"__init__":curFuncName)).type,0, node);
         visitStmtNode(node.paramList);
         isRet = false;
         node.funcBody.stmtList.forEach(this::visitStmt);
@@ -125,8 +125,8 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 ce.add(XCompileError.ceType.ce_type,"vardecl init:"+node.name,node);
             }
         }
-        if ((curClassName == null || curFuncName != null) && SST.regSymbol(getScopeName(node.name), new SymbolType(node.type), 0)) {
-            ce.add(XCompileError.ceType.ce_redef,"var:"+node.name,node);
+        if (curClassName == null || curFuncName != null) {
+            SST.regSymbol(getScopeName(node.name), new SymbolType(node.type),0,curClassName,curFuncName,node);
         }
     }
     public void visitTypeNode(XASTTypeNode node){
@@ -315,6 +315,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     int t = checkFuncParam(fparams,ftype);
                     if (t==0) {
                         node.type = ftype.typeList.elementAt(0);
+                        node.toNode = node.exprList.firstElement().toNode;
                     } else if (t==-1){
                         ce.add(XCompileError.ceType.ce_type,"call param len:"+fparams.size()+"/"+(ftype.typeList.size()-1),node);
                     } else {
@@ -385,23 +386,16 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     ce.add(XCompileError.ceType.ce_nodecl,"not class:"+node.exprList.elementAt(0).type.declType.toString(),node);
                     break;
                 }
-                out.println("dbg:mem:"+curMemName);
-                switch (node.exprList.elementAt(1).nodeID) {
-                    case e_mem:
-                        visitExpr(node.exprList.elementAt(1));
-                        node.type=node.exprList.elementAt(1).type;
-                        break;
-                    case p_id:
-                        curMemName.append(((XASTPrimNode) node.exprList.elementAt(1)).strLiteral);
-                        SymbolID sym = SST.findSymbol(curMemName.toString());
-                        if (sym==null){
-                            ce.add(XCompileError.ceType.ce_nodecl,curMemName.toString(),node);
-                        } else {
-                            node.type = node.exprList.elementAt(1).type = sym.type;
-                            out.println("member expr:"+curMemName.toString()+":"+node.type);
-                        }
-                        curMemName = new StringBuilder();
-                        break;
+                out.println("dbg:mem:"+curMemName+' '+node.exprList.elementAt(0).type+' '+node.exprList.elementAt(0).instAddr);
+                if (node.exprList.elementAt(1).nodeID != XASTNodeID.e_mem && node.exprList.elementAt(1).nodeID != XASTNodeID.p_id){
+                    ce.add(XCompileError.ceType.ce_type,"mem:"+node.exprList.elementAt(1).nodeID.toString(),node.exprList.elementAt(1));
+                    curMemName = new StringBuilder();
+                } else {
+                    visitExpr(node.exprList.elementAt(1));
+                    node.type=node.exprList.elementAt(1).type;
+                    node.instAddr = node.exprList.elementAt(1).instAddr;
+                    node.toNode = node.exprList.elementAt(1).toNode;
+                    out.println("DBG:mem:"+node.type+' '+node.instAddr+' '+((node.toNode!=null)?node.toNode.nodeID:""));
                 }
                 break;
             case e_new:
@@ -434,17 +428,27 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 out.println("prim this:"+curClassName);
                 node.type = new SymbolType(SymbolType.typType.CLASS,curClassName,0);
                 break;
-            case p_id:
-                SymbolID sym = SST.findSymbol(getScopeName(node.strLiteral));
+            case p_id: {
+                String finalName;
+                if (curMemName.length()==0){
+                    finalName = getScopeName(node.strLiteral);
+                } else {
+                    finalName = curMemName.append(node.strLiteral).toString();
+                    curMemName = new StringBuilder();
+                }
+                SymbolID sym = SST.findSymbol(finalName);
                 if (sym == null) sym = SST.findSymbol(node.strLiteral);
                 if (sym == null) {
-                    ce.add(XCompileError.ceType.ce_nodecl,"prim:"+node.strLiteral,node);
+                    ce.add(XCompileError.ceType.ce_nodecl, "prim:" + finalName, node);
                     node.type = null;
                 } else {
                     node.type = sym.type;
-                    out.println("prim id:"+node.strLiteral+":"+node.type);
+                    node.instAddr = sym.reg;
+                    node.toNode = sym.startNode;
+                    out.println("prim id:" + finalName + ":" + node.type);
                 }
                 break;
+            }
         }
     }
 

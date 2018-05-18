@@ -8,24 +8,27 @@ import static java.lang.System.out;
 
 public class XParameter {
 
-    Vector<String> srcPath = new Vector<>();
+    static Vector<String> srcPath = new Vector<>();
+    static String outPath = null;
 
-    public static boolean isEnableSemanticCheck = true;
-    public static boolean isEnableIR = true;
-    public static boolean isEnableOptimization = true;
-    public static boolean isEnableAssembly = true;
+    static boolean isEnableSemanticCheck = true;
+    static boolean isEnableIR = true;
+    static boolean isEnableOptimization = true;
+    static boolean isEnableAssembly = true;
+    public static boolean isWarningError = false;
+    public static boolean isWarningAll = false;
     public static int verbose = 0;
 
-    XParameter(String[] args) throws XException {
+    static void accept(String[] args) throws XException {
         isEnableSemanticCheck = true;
-        for (String i:args){
-            if (i.toCharArray()[0] != '-'){
-                srcPath.add(i);
+        for (int i=0;i<args.length;++i){
+            if (args[i].toCharArray()[0] != '-'){
+                srcPath.add(args[i]);
             } else {
-                if (i.equals("--semantic")){
+                if (args[i].equals("--semantic")){
                     isEnableIR = false;
-                } else if (i.startsWith("-O")){
-                    switch(i.charAt(2)) {
+                } else if (args[i].startsWith("-O")){
+                    switch(args[i].charAt(2)) {
                         case '0':
                             isEnableOptimization = false;
                             break;
@@ -34,16 +37,32 @@ public class XParameter {
                         default:
                             throw new XException(XException.exType.param_error,"invalid parameter");
                     }
-                } else if (i.startsWith("-v")){
-                    for (char t:i.toCharArray()){
+                } else if (args[i].startsWith("-v")){
+                    for (char t:args[i].toCharArray()){
                         if (t=='v'){
                             ++verbose;
                         }
+                    }
+                } else if (args[i].startsWith("-W")){
+                    switch (args[i]) {
+                        case "-Wall":
+                            isWarningAll = true;
+                            break;
+                        case "-Werror":
+                            isWarningError = true;
+                            break;
+                    }
+                } else if (args[i].startsWith("-o")){
+                    if (outPath!=null){
+                        throw new XException(XException.exType.param_error,"multiple output file not supported");
+                    } else if (i+1<args.length) {
+                        outPath = args[++i];
                     }
                 }
             }
         }
         if (srcPath.size()<1) throw new XException(XException.exType.param_error,"unspecified source file path");
+        if (outPath==null) outPath="a.out";
 
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;

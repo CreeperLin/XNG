@@ -1,6 +1,7 @@
 package xng.frontend.AST;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import xng.XIR.XCFGNode;
 import xng.XIR.XIRInst;
 import xng.XIR.XIRInstAddr;
 import xng.frontend.Symbol.SrcPos;
@@ -15,6 +16,7 @@ public class XASTExprNode extends XASTStmtNode{
     public SymbolType type = null;
 
     public XIRInstAddr instAddr = null;
+    public XCFGNode toNode = null;
     public Vector<XIRInst> instList = new Vector<>();
 
     public XASTExprNode() {
