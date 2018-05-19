@@ -68,6 +68,13 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         out.println("Type:"+node.nodeID.toString()+":"+(node.className==null?"":node.className)+"("+node.dim+")");
     }
 
+    private void wrapExprNode(XASTStmtNode node){
+        if(!(node instanceof XASTExprNode) || node.startNode!=null) return;
+        XCFGNode n = cfg.addNode();
+        node.startNode = node.endNode = n;
+        n.instList.addAll(((XASTExprNode)node).instList);
+    }
+
     public void visitStmtNode(XASTStmtNode node){
         out.println("Statment:"+node.nodeID.toString()+":"+node.pos);
         if (node.nodeID != XASTNodeID.s_for && node.nodeID != XASTNodeID.s_while) {
@@ -152,6 +159,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
 //                cc_inst.oprList.add(((XASTExprNode) node.stmtList.elementAt(1)).instAddr);
                 cc_inst.oprList.add(XIRInstAddr.newJumpAddr(node.endNode));
                 condNode.linkTo(node.endNode);
+                wrapExprNode(node.stmtList.elementAt(3));
                 condNode.linkTo(node.stmtList.elementAt(3).startNode);
                 if (node.stmtList.elementAt(3).endNode != null)
                     node.stmtList.elementAt(3).endNode.linkTo(stepNode);
@@ -173,6 +181,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
 //                cc_inst.oprList.add(((XASTExprNode) node.stmtList.elementAt(0)).instAddr);
                 cc_inst.oprList.add(XIRInstAddr.newJumpAddr(newNode));
                 curNode.linkTo(newNode);
+                wrapExprNode(node.stmtList.elementAt(1));
                 curNode.linkTo(node.stmtList.elementAt(1).startNode);
                 if (node.stmtList.elementAt(1).endNode!=null) {
                     node.stmtList.elementAt(1).endNode.linkTo(curNode);
@@ -225,7 +234,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             node.exprList.forEach(this::visitExpr);
             node.exprList.forEach(i -> node.instList.addAll(i.instList));
         }
-        XIRInst.opType type = null;
+        XIRInst.opType type;
         switch (node.nodeID){
             case e_none:
                 return;
@@ -365,7 +374,6 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 type = XIRInst.opType.op_neg;
                 break;
             case e_list:
-                type = XIRInst.opType.op_none;
                 return;
             case e_mem: {
                 type = XIRInst.opType.op_mov;
@@ -434,11 +442,11 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         out.println("Creator:");
         if (node.exprList!=null) node.exprList.forEach(this::visitExpr);
         visitTypeNode(node.ctype);
-        if (node.ctype.dim > 0){
-
-        } else {
-
-        }
+//        if (node.ctype.dim > 0){
+//
+//        } else {
+//
+//        }
     }
 
 }
