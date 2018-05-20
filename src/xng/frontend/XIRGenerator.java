@@ -19,6 +19,8 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
     private Stack<XCFGNode> curLoopContNode = new Stack<>();
     private XCFGNode curFuncRetNode = null;
 
+    private XIRInstAddr curFuncRetAddr = null;
+
     public XIRGenerator(XCFG _cfg,ScopedSymbolTable _sst){
         cfg = _cfg;
         SST = _sst;
@@ -133,11 +135,10 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 XCFGNode curNode = cfg.addNode();
                 curNode.addInst(((XASTExprNode) node.stmtList.elementAt(0)).instList);
                 XIRInst mv_inst = curNode.addInst(XIRInst.opType.op_mov);
-                mv_inst.oprList.add(XIRInstAddr.newRegAddr());
+                mv_inst.oprList.add(XIRInstAddr.newRegAddr(-2));
                 mv_inst.oprList.add(((XASTExprNode) node.stmtList.elementAt(0)).instAddr);
                 curNode.addInst(XIRInst.opType.op_ret);
-                assert curFuncRetNode != null;
-                curNode.linkTo(curFuncRetNode);
+//                curNode.linkTo(curFuncRetNode);
                 node.startNode = curNode;
                 node.endNode = null;
                 break;
@@ -210,8 +211,6 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                     curNode.linkTo(node.stmtList.elementAt(i).startNode);
                     if (node.stmtList.elementAt(i).endNode != null){
                         node.stmtList.elementAt(i).endNode.linkTo(newNode);
-//                        XIRInst j_inst = node.stmtList.elementAt(i).endNode.addInst(XIRInst.opType.op_jmp);
-//                        j_inst.oprList.add(XIRInstAddr.newJumpAddr(newNode));
                     }
                 }
                 if (node.stmtList.size()<3){
@@ -272,9 +271,13 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 if (node.exprList.size()>1){
                     node.exprList.elementAt(1).exprList.forEach(i->{
                         visitExpr(i);
-                        XIRInst push_inst = new XIRInst(XIRInst.opType.op_push);
-                        push_inst.oprList.add(i.instAddr);
-                        node.instList.add(push_inst);
+                        XIRInst param_inst = new XIRInst(XIRInst.opType.op_param);
+                        param_inst.oprList.add(i.instAddr);
+//                        XIRInst param_inst = new XIRInst(XIRInst.opType.op_mov);
+//                        param_inst.oprList.add(XIRInstAddr.newRegAddr(-4));
+                        param_inst.oprList.add(i.instAddr);
+                        node.instList.addAll(i.instList);
+                        node.instList.add(param_inst);
                     });
                 }
                 XIRInst call_inst = new XIRInst(type);

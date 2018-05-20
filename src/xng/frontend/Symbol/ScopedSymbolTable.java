@@ -62,6 +62,11 @@ public class ScopedSymbolTable {
         return 0;
     }
 
+    public void regSymbol(String str, SymbolID sym) {
+        if (sym == null) return;
+        symTableStack.peek().symTable.put(str,sym);
+    }
+
     public SymbolID regSymbol(String str, SymbolType type, Integer tag, XASTBaseNode node) {
         return regSymbol(str,type,tag,null,null,node);
     }

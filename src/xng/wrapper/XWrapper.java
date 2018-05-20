@@ -99,7 +99,7 @@ public class XWrapper {
         if (!XParameter.isEnableIR) return;
 
         new XIRGenerator(cfg,SST).visitCUNode(prog);
-//        cfg.print();
+        cfg.print();
 
         new XCFGReduce(cfg);
         cfg.print();

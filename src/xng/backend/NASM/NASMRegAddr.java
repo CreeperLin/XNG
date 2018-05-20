@@ -16,4 +16,9 @@ public class NASMRegAddr extends NASMAddr {
     public String toString() {
         return reg.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof NASMRegAddr) && ((NASMRegAddr)o).reg.equals(reg);
+    }
 }
