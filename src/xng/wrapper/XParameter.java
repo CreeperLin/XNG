@@ -62,7 +62,7 @@ public class XParameter {
             }
         }
         if (srcPath.size()<1) throw new XException(XException.exType.param_error,"unspecified source file path");
-        if (outPath==null) outPath="a.nasm";
+        if (outPath==null) outPath="a.asm";
 
         isEnableAssembly = isEnableIR && isEnableAssembly;
         isEnableIR = isEnableSemanticCheck && isEnableIR;

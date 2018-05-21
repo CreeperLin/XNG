@@ -7,5 +7,6 @@ public interface XIRVisitor {
 
     void visitXCFG(XCFG cfg);
     void visitXCFGNode(XCFGNode node);
+    void visitXIRInst(XIRInst inst);
 
 }

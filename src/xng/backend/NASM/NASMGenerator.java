@@ -14,7 +14,7 @@ public class NASMGenerator {
 
     private HashMap<Integer,NASMReg> regMap = new HashMap<>();
     private int[] availReg = {16,17,18,19,1,2,3,4,5,6,7};
-    private int[] paramReg = {23,22,19,18,8,9};
+    private int[] paramReg = {22,23,19,18,8,9};
     private int curAvailReg = 0;
     private int curParamReg = 0;
     private HashSet<Integer> visitFlag = new HashSet<>();
@@ -51,7 +51,7 @@ public class NASMGenerator {
         node.instList.forEach(this::visitXIRInst);
         if (node.nextNode.size()==2){
             appendXCFGNode(node.nextNode.get(1));
-        } else if (node.nextNode.size()==1){
+        } else if (node.nextNode.size()==1 && node.instList.lastElement().op != XIRInst.opType.op_ret){
             emitNASMInst(XIRInst.opType.op_jmp,XIRInstAddr.newJumpAddr(node.nextNode.get(0)),null);
         } else {
             System.out.println("NASMGen:end");
@@ -182,14 +182,32 @@ public class NASMGenerator {
         NASMAddr a1 = getNASMAddr(opr1);
         if (op == XIRInst.opType.op_mov && a1.equals(a2)) return;
         NASMInst inst;
-        if (op == XIRInst.opType.op_param){
-            if (curParamReg < 6){
-                inst = new NASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(paramReg[curParamReg++],NASMWordType.DWORD)),a1);
-            } else {
-                inst = new NASMInst(NASMOp.opType.PUSH,a1,null);
+        switch (op){
+            case op_wpara:
+                if (curParamReg < 6){
+                    inst = new NASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(paramReg[curParamReg++],NASMWordType.DWORD)),a1);
+                } else {
+                    inst = new NASMInst(NASMOp.opType.PUSH,a1,null);
+                    ++curParamReg;
+                }
+                break;
+            case op_rpara: {
+                int para_idx = opr2.lit1;
+                if (para_idx >= 6) {
+                    inst = new NASMInst(NASMOp.opType.POP, a1, null);
+                } else {
+                    inst = new NASMInst(NASMOp.opType.MOV, a1, new NASMRegAddr(new NASMReg(paramReg[para_idx], NASMWordType.DWORD)));
+                }
+                break;
             }
-        } else {
-            inst = new NASMInst(getNASMOp(op),a1,a2);
+            case op_ret: {
+                NASMInst pop_inst = new NASMInst(NASMOp.opType.POP, new NASMRegAddr(NASMReg.regType.RBP), null);
+                asm.emitText(pop_inst.toString());
+                inst = new NASMInst(getNASMOp(op), a1, a2);
+                break;
+            }
+            default:
+                inst = new NASMInst(getNASMOp(op),a1,a2);
         }
         System.out.println("NASMGen:emitInst:"+inst);
         instList.add(inst);

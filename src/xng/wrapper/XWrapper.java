@@ -20,6 +20,7 @@ import xng.frontend.Symbol.ScopedSymbolTable;
 import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
 import xng.frontend.XIRGenerator;
+import xng.opt.SSAConverter;
 import xng.opt.XCFGReduce;
 
 import java.io.*;
@@ -103,6 +104,10 @@ public class XWrapper {
 
         new XCFGReduce(cfg);
         cfg.print();
+
+        if (XParameter.isEnableOptimization) {
+            out.println("opt");
+        }
 
         if (!XParameter.isEnableAssembly) return;
 
