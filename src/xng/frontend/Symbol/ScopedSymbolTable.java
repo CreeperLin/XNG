@@ -2,6 +2,7 @@ package xng.frontend.Symbol;
 
 import xng.XIR.XCFG;
 import xng.XIR.XCFGNode;
+import xng.XIR.XIRData;
 import xng.XIR.XIRInstAddr;
 import xng.common.XCompileError;
 import xng.frontend.AST.*;
@@ -84,14 +85,18 @@ public class ScopedSymbolTable {
         if (type.declType == SymbolType.typType.FUNC){
             if (symTableStack.size() == 1) {
                 sym.startNode = cfg.addNode();
-                sym.startNode.name = "_FUNC"+name;
+                if (curClassName==null) sym.startNode.name = "_FUNC_"+name;
+                else sym.startNode.name = "_CMEM_"+name;
                 sym.reg = XIRInstAddr.newRegAddr();
             }
         } else if (node instanceof XASTVarDeclNode) {
             if (curFuncName != null) {
-                SymbolID funcSym;
-                if ((funcSym=findSymbol(curFuncName))==null){
-                    ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
+//                SymbolID funcSym;
+//                if ((funcSym=findSymbol(curFuncName))==null){
+//                    ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
+//                } else
+                if (type.declType == SymbolType.typType.CLASS){
+                    ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(0,getSymTypeMemSize(type),0);
                 } else ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(getSymTypeMemSize(type));
             } else if (curClassName != null){
                 SymbolID classSym;
@@ -99,11 +104,13 @@ public class ScopedSymbolTable {
                     ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
                 } else {
                     sym.tag = classSym.tag;
-                    ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newImmAddr(-sym.tag,0);
+                    ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newImmAddr(sym.tag,0);
                     classSym.tag += 4;
                 }
             } else {
-                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newStaticAddr(name,getSymTypeMemSize(type));
+                int size = getSymTypeMemSize(type);
+                cfg.dataList.add(new XIRData(name,size,false));
+                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newStaticAddr(name,size);
             }
         }
         symTableStack.peek().symTable.put(name,sym);

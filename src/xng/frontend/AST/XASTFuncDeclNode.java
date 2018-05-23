@@ -5,6 +5,7 @@ import xng.frontend.Symbol.SrcPos;
 public class XASTFuncDeclNode extends XASTStmtNode{
     public String name;
     public boolean isConstructor;
+    public boolean isMember;
     public XASTTypeNode retType;
     public XASTStmtNode paramList;
     public XASTStmtNode funcBody;

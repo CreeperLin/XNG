@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class ASMGenerator {
 
-    enum sectType{
+    public enum sectType{
         TEXT,DATA,BSS,NONE
     }
     private sectType curSection = sectType.NONE;
@@ -26,7 +26,7 @@ public class ASMGenerator {
         emitLine(false,null);
     }
 
-    private void emitLine(boolean indent, String str){
+    public void emitLine(boolean indent, String str){
         try {
             if (indent) bw.write('\t');
             if (str!=null) bw.write(str);
@@ -38,7 +38,7 @@ public class ASMGenerator {
         }
     }
 
-    private void defSection(sectType sec){
+    public void defSection(sectType sec){
         if (curSection==sec) return;
         emitLine(false,"SECTION ."+sec.toString().toLowerCase());
         curSection = sec;
@@ -46,11 +46,6 @@ public class ASMGenerator {
 
     public void emitText(String str) {
         defSection(sectType.TEXT);
-        emitLine(true, str);
-    }
-
-    public void emitData(String str) {
-        defSection(sectType.DATA);
         emitLine(true, str);
     }
 

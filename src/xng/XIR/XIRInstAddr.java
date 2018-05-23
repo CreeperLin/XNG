@@ -33,6 +33,13 @@ public class XIRInstAddr {
         return inst;
     }
 
+    public static XIRInstAddr newStaticAddr(String name, String val){
+        System.out.println("XIRInstAddr:new static:"+name);
+        XIRInstAddr inst = new XIRInstAddr(addrType.a_static,0,0,0,0);
+        inst.str = name;
+        return inst;
+    }
+
     public static XIRInstAddr newRegAddr(){
         System.out.println("XIRInstAddr:new reg:"+regCount);
         return new XIRInstAddr(addrType.a_reg,regCount++,0,0,0);
@@ -48,10 +55,26 @@ public class XIRInstAddr {
         return new XIRInstAddr(addrType.a_stack,stackCount++,size,0,0);
     }
 
-    public static XIRInstAddr newJumpAddr(XCFGNode node){
-        System.out.println("XIRInstAddr:new jump:"+node.nodeID);
-        return new XIRInstAddr(addrType.a_label,node.nodeID,0,0,0);
+    public static XIRInstAddr newStackAddr(int id, int size, int ofs){
+        int c = stackCount++;
+        System.out.println("XIRInstAddr:new stack:"+c+":"+ofs);
+        return new XIRInstAddr(addrType.a_stack,c,size,ofs,id==0?c:id);
     }
+
+    public static XIRInstAddr newJumpAddr(XCFGNode node){
+        XIRInstAddr addr = new XIRInstAddr(addrType.a_label,node.nodeID,0,0,0);
+        addr.str = node.name;
+        System.out.println("XIRInstAddr:new jump:"+addr.str);
+        return addr;
+    }
+
+    public static XIRInstAddr newJumpAddr(String label){
+        XIRInstAddr addr = new XIRInstAddr(addrType.a_label,0,0,0,0);
+        addr.str = label;
+        System.out.println("XIRInstAddr:new jump:"+addr.str);
+        return addr;
+    }
+
 
     public static XIRInstAddr newImmAddr(int l1, int l2){
         System.out.println("XIRInstAddr:new imm:"+l1+' '+l2);
@@ -60,7 +83,7 @@ public class XIRInstAddr {
 
     public static XIRInstAddr newMemAddr(XIRInstAddr base, XIRInstAddr ofs){
         System.out.println("XIRInstAddr:new mem:"+base+' '+ofs);
-        return new XIRInstAddr(addrType.a_mem,base.lit1,ofs.lit1,0,0);
+        return new XIRInstAddr(addrType.a_mem,base.lit1,0,0,ofs.lit1);
     }
 
     public static XIRInstAddr newMemAddr(XIRInstAddr base, XIRInstAddr ofs, int scale, int num){
@@ -87,7 +110,7 @@ public class XIRInstAddr {
             case a_static:
                 return "("+type.toString()+' ' + str + ' '+lit1+ ") ";
             case a_label:
-                return "("+type.toString()+' ' + lit1 + ")";
+                return "("+type.toString()+' ' + str+ ")";
         }
         return null;
     }

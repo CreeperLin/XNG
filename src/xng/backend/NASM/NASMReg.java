@@ -3,16 +3,23 @@ package xng.backend.NASM;
 public class NASMReg{
 
     public enum regType {
-        NONE,
+        NONE,REL,
         R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,RAX,RBX,RCX,RDX,RSP,RBP,RSI,RDI,RIP,
         R0D,R1D,R2D,R3D,R4D,R5D,R6D,R7D,R8D,R9D,R10D,R11D,R12D,R13D,R14D,R15D,EAX,EBX,ECX,EDX,EBP,ESI,EDI,ESP,EIP,
         R0W,R1W,R2W,R3W,R4W,R5W,R6W,R7W,R8W,R9W,R10W,R11W,R12W,R13W,R14W,R15W,AX,BX,CX,DX,BP,SI,DI,SP,
     }
 
     public regType type;
+    public String staticName;
 
     public NASMReg(regType _t){
         type = _t;
+    }
+
+    public NASMReg(String str)
+    {
+        type = regType.REL;
+        staticName = str;
     }
 
     public NASMReg(int id, NASMWordType wt){
@@ -171,6 +178,7 @@ public class NASMReg{
 
     @Override
     public String toString() {
+        if (type==regType.REL) return "rel "+staticName;
         return type.name().toLowerCase();
     }
 

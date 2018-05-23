@@ -29,6 +29,10 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         System.out.println("Global Scope Builder begin:");
         SST.push_scope("global");
         Vector<SymbolType> plist = new Vector<>();
+//        plist.add(SymbolType.intType);
+//        plist.add(SymbolType.intType);
+//        SST.regSymbol("_new",new SymbolType(new Vector<>(plist)),0, node);
+//        plist.clear();
         plist.add(SymbolType.intType);
         SST.regSymbol("size",new SymbolType(new Vector<>(plist)),0, node);
         plist.clear();
@@ -82,6 +86,7 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
 
     @Override
     public void visitFuncDeclNode(XASTFuncDeclNode node) {
+        if (curClassName!=null) node.isMember = true;
         funcParams.clear();
         curFuncName = node.name;
         funcParams.add(new SymbolType(node.retType));
@@ -92,13 +97,13 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         if (node.isConstructor) {
             System.out.println("found constructor:");
             if (node.name.equals(curClassName)){
-                SST.regSymbol(getScopeName(node.name, true), type, 0, node);
+                SST.regSymbol(getScopeName(node.name, true), type, 0, curClassName, null, node);
                 SymbolID curClass = SST.findSymbol(curClassName);
                 curClass.type.typeList.add(type);
             } else {
                 ce.add(XCompileError.ceType.ce_invalid_constructor,"unidentical identifier:"+curClassName,node);
             }
-        } else node.startNode = SST.regSymbol(getScopeName(node.name, false), type, 0, node).startNode;
+        } else node.startNode = SST.regSymbol(getScopeName(node.name, false), type, 0, curClassName,null, node).startNode;
     }
 
     @Override

@@ -48,8 +48,8 @@ public class NASMOp {
             case op_gt:
                 return opType.JLE;
         }
-        System.out.println("NASMOp:error");
-        return null;
+        System.out.println("NASMOp:error:"+cmp.toString());
+        return opType.JZ;
     }
 
     static NASMOp.opType newJccOp(XIRInst.opType cmp){
@@ -67,8 +67,8 @@ public class NASMOp {
             case op_gt:
                 return opType.JG;
         }
-        System.out.println("NASMOp:error");
-        return null;
+        System.out.println("NASMOp:error:"+cmp.toString());
+        return opType.JNZ;
     }
 
     @Override

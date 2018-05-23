@@ -6,6 +6,7 @@ public class XCFG {
 //    Vector<XCFGNode> nodes = new Vector<>();
     HashSet<XCFGNode> nodes = new HashSet<>();
     public Vector<XCFGNode> globalNodes = new Vector<>();
+    public Vector<XIRData> dataList = new Vector<>();
     public XCFGNode entryNode = null;
 
     public XCFG(){}
@@ -41,13 +42,13 @@ public class XCFG {
 //        n2.prevNode.addAll(n1.prevNode);
         n1.instList.addAll(n2.instList);
         for (XCFGNode i : n2.nextNode) {
-            i.prevNode.remove(n2);
-            i.prevNode.add(n1);
+            int idx = i.prevNode.indexOf(n2);
+            if (idx!=-1) i.prevNode.set(idx,n1);
         }
         for (XCFGNode i : n2.prevNode) {
             if (i.nodeID!=n1.nodeID){
-                i.nextNode.remove(n2);
-                i.nextNode.add(n1);
+                int idx = i.nextNode.indexOf(n2);
+                if (idx!=-1) i.nextNode.set(idx,n1);
                 n1.prevNode.add(i);
             }
         }

@@ -1,11 +1,9 @@
 package xng.frontend;
 
-import xng.XIR.XCFG;
-import xng.XIR.XIRInst;
-import xng.XIR.XIRInstAddr;
-import xng.XIR.XCFGNode;
+import xng.XIR.*;
 import xng.frontend.AST.*;
 import xng.frontend.Symbol.ScopedSymbolTable;
+import xng.frontend.Symbol.SymbolType;
 
 import java.util.Stack;
 import java.util.Vector;
@@ -19,6 +17,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
     private Stack<XCFGNode> curLoopBreakNode = new Stack<>();
     private Stack<XCFGNode> curLoopContNode = new Stack<>();
     private XCFGNode curFuncRetNode = null;
+    private int strLiteralCount = 0;
 
     private XIRInstAddr curFuncRetAddr = null;
 
@@ -39,10 +38,21 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         curFuncRetNode = cfg.addNode();
         out.println("Function:"+node.name);
         visitTypeNode(node.retType);
+        XIRInst pi = node.startNode.addInst(XIRInst.opType.op_push);
+        pi.oprList.add(XIRInstAddr.newRegAddr(-1));
+        XIRInst mi = node.startNode.addInst(XIRInst.opType.op_mov);
+        mi.oprList.add(XIRInstAddr.newRegAddr(-1));
+        mi.oprList.add(XIRInstAddr.newRegAddr(-3));
         visitStmt(node.paramList);
+        int sz = node.paramList == null ? 0 : node.paramList.stmtList.size();
+        if (node.isMember){
+            ++sz;
+            XIRInst param_inst = node.startNode.addInst(XIRInst.opType.op_rpara);
+            param_inst.oprList.add(XIRInstAddr.newStackAddr(4));
+            param_inst.oprList.add(XIRInstAddr.newImmAddr(sz-1, 0));
+        }
         if (node.paramList!=null) {
             Vector<XASTStmtNode> stmtList = node.paramList.stmtList;
-            int sz = stmtList.size();
             for (int i1 = 0; i1 < sz; i1++) {
                 XASTStmtNode i = stmtList.get(i1);
                 XIRInst param_inst = node.startNode.addInst(XIRInst.opType.op_rpara);
@@ -52,7 +62,13 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         }
         visitStmt(node.funcBody);
         node.startNode.linkTo(node.funcBody.startNode);
-        if (node.funcBody.endNode != null) node.funcBody.endNode.linkTo(curFuncRetNode);
+        XCFGNode bodyEnd = node.funcBody.endNode;
+        if (bodyEnd != null) {
+            bodyEnd.linkTo(curFuncRetNode);
+            System.out.println("Function:bodyEnd:"+node.name+":"+bodyEnd.nodeID);
+            if (bodyEnd.instList.isEmpty() || bodyEnd.instList.lastElement().op != XIRInst.opType.op_ret)
+                curFuncRetNode.addInst(XIRInst.opType.op_ret);
+        }
         node.endNode = curFuncRetNode;
         curFuncRetNode = null;
         cfg.globalNodes.add(node.startNode);
@@ -133,7 +149,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             case s_cont:
             case s_break: {
                 XCFGNode curNode = cfg.addNode();
-                XIRInst j_inst = curNode.addInst(XIRInst.opType.op_jcc);
+                XIRInst j_inst = curNode.addInst(XIRInst.opType.op_jmp);
 //                j_inst.oprList.add(XIRInstAddr.newImmAddr(0,0));
                 XCFGNode toNode = (node.nodeID == XASTNodeID.s_cont) ? curLoopContNode.peek() : curLoopBreakNode.peek();
                 j_inst.oprList.add(XIRInstAddr.newJumpAddr(toNode));
@@ -210,7 +226,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             case s_if: {
                 XCFGNode curNode = cfg.addNode();
                 curNode.addInst(((XASTExprNode)node.stmtList.elementAt(0)).instList);
-                if (node.stmtList.elementAt(0) instanceof XASTPrimNode){
+                if (((XASTExprNode) node.stmtList.elementAt(0)).type.equals(SymbolType.boolType)){
                     XIRInst cmp_inst = curNode.addInst(XIRInst.opType.op_eq);
                     cmp_inst.oprList.add(((XASTExprNode)node.stmtList.elementAt(0)).instAddr);
                     cmp_inst.oprList.add(XIRInstAddr.newImmAddr(1,0));
@@ -221,8 +237,12 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 if (node.stmtList.size()<3){
                     curNode.linkTo(newNode);
                     if_inst.oprList.add(XIRInstAddr.newJumpAddr(newNode));
-                } else if_inst.oprList.add(XIRInstAddr.newJumpAddr(node.stmtList.elementAt(1).startNode));
+                } else{
+                    wrapExprNode(node.stmtList.elementAt(1));
+                    if_inst.oprList.add(XIRInstAddr.newJumpAddr(node.stmtList.elementAt(1).startNode));
+                }
                 for (int i=1; i < node.stmtList.size(); ++i) {
+                    wrapExprNode(node.stmtList.elementAt(i));
                     curNode.linkTo(node.stmtList.elementAt(i).startNode);
                     if (node.stmtList.elementAt(i).endNode != null){
                         node.stmtList.elementAt(i).endNode.linkTo(newNode);
@@ -294,6 +314,11 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                         node.instList.add(param_inst);
                     }
                 }
+                if (node.toNode.name.startsWith("_CMEM")){
+                    XIRInst param_inst = new XIRInst(XIRInst.opType.op_wpara);
+                    param_inst.oprList.add(node.exprList.get(0).instAddr);
+                    node.instList.add(param_inst);
+                }
                 XIRInst call_inst = new XIRInst(type);
 //                call_inst.oprList.add(node.exprList.firstElement().instAddr);
                 call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.toNode));
@@ -335,11 +360,11 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 type = XIRInst.opType.op_gt;
                 break;
             case e_idx: {
-                XIRInst add_inst = new XIRInst(XIRInst.opType.op_add);
-                XIRInstAddr idx_addr = XIRInstAddr.newRegAddr();
-                add_inst.oprList.add(idx_addr);
-                node.exprList.forEach(i->add_inst.oprList.add(i.instAddr));
-
+//                XIRInst add_inst = new XIRInst(XIRInst.opType.op_add);
+                XIRInstAddr idx_addr = XIRInstAddr.newMemAddr(node.exprList.get(0).instAddr,node.exprList.get(1).instAddr,4,0);
+//                node.instAddr = idx_addr;
+//                add_inst.oprList.add(idx_addr);
+//                node.exprList.forEach(i->add_inst.oprList.add(i.instAddr));
                 XIRInst mv_inst = new XIRInst(XIRInst.opType.op_mov);
                 node.instAddr = XIRInstAddr.newRegAddr();
                 mv_inst.oprList.add(node.instAddr);
@@ -393,16 +418,22 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             case e_list:
                 return;
             case e_mem: {
-                type = XIRInst.opType.op_mov;
-                XIRInst mv_inst = new XIRInst(type);
-                XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-                mv_inst.oprList.add(tmp_addr);
-                mv_inst.oprList.add(XIRInstAddr.newMemAddr(node.exprList.elementAt(0).instAddr,node.exprList.elementAt(1).instAddr));
-                node.instList.add(mv_inst);
-                node.instAddr = XIRInstAddr.newMemAddr(tmp_addr);
+                if (node.exprList.get(1).nodeID == XASTNodeID.e_mem){
+
+                } else {
+                    XIRInstAddr ofs_addr = XIRInstAddr.newStackAddr(node.exprList.elementAt(0).instAddr.lit1,4,node.exprList.elementAt(1).instAddr.lit1);
+                    node.instAddr = ofs_addr;
+                }
+//                type = XIRInst.opType.op_mov;
+//                XIRInst mv_inst = new XIRInst(type);
+//                XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
+//                mv_inst.oprList.add(tmp_addr);
+//                mv_inst.oprList.add(ofs_addr);
+//                node.instList.add(mv_inst);
                 return;
             }
             case e_new:
+                node.instAddr = node.exprList.get(0).instAddr;
                 return;
             case e_not:
                 type = XIRInst.opType.op_not;
@@ -429,6 +460,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         node.instList.add(inst);
         System.out.println(inst);
     }
+
     public void visitPrimNode(XASTPrimNode node){
         out.print("Primary:"+node.nodeID.toString()+":");
         switch (node.nodeID){
@@ -448,7 +480,9 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 break;
             case p_lit_str:
                 out.println(node.strLiteral);
-//                node.instAddr = new XIRInstAddr(XIRInstAddr.addrType.a_imm,node.intLiteral,0);
+                String name = "_str_" +Integer.toString(++strLiteralCount);
+                node.instAddr = XIRInstAddr.newStaticAddr(name,node.strLiteral.length());
+                cfg.dataList.add(new XIRData(name,node.strLiteral));
                 break;
             case p_this:
                 break;
@@ -459,11 +493,24 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         out.println("Creator:");
         if (node.exprList!=null) node.exprList.forEach(this::visitExpr);
         visitTypeNode(node.ctype);
-//        if (node.ctype.dim > 0){
-//
-//        } else {
-//
-//        }
+        if (node.ctype.dim > 0){
+            for (XASTExprNode i : node.exprList) {
+                visitExpr(i);
+                if (i.isEmpty()) break;
+                node.instList.addAll(i.instList);
+                XIRInst para_inst = new XIRInst(XIRInst.opType.op_wpara);
+                para_inst.oprList.add(i.instAddr);
+                XIRInst call_inst = new XIRInst(XIRInst.opType.op_call);
+                call_inst.oprList.add(XIRInstAddr.newJumpAddr("__new__"));
+                node.instList.add(call_inst);
+            }
+            node.instAddr = XIRInstAddr.newRegAddr(-2);
+        } else if (node.exprList != null && node.exprList.size()>0){
+            XIRInst call_inst = new XIRInst(XIRInst.opType.op_call);
+            call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.ctype.className+"__init__"));
+            node.instList.add(call_inst);
+            node.instAddr = XIRInstAddr.newRegAddr(-2);
+        }
     }
 
 }

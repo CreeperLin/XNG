@@ -12,6 +12,7 @@ public class XCFGNode {
 
     public XCFGNode(int _nodeID) {
         nodeID = _nodeID;
+        name = "_L" + Integer.toString(nodeID);
     }
 
     public XIRInst addInst(XIRInst.opType type) {

@@ -1,9 +1,6 @@
 package xng.backend.NASM;
 
-import xng.XIR.XCFG;
-import xng.XIR.XCFGNode;
-import xng.XIR.XIRInst;
-import xng.XIR.XIRInstAddr;
+import xng.XIR.*;
 import xng.backend.ASMGenerator;
 
 import java.util.*;
@@ -18,6 +15,7 @@ public class NASMGenerator {
     private int curAvailReg = 0;
     private int curParamReg = 0;
     private HashSet<Integer> visitFlag = new HashSet<>();
+//    private XCFGNode nextJumpNode = null;
 
     private XCFG cfg;
     private ASMGenerator asm;
@@ -32,38 +30,71 @@ public class NASMGenerator {
 
     private void visitXCFG(){
         cfg.globalNodes.stream().map(globalNode -> globalNode.name).forEach(asm::defGlobal);
+        cfg.dataList.stream().map(data -> data.name).forEach(asm::defGlobal);
         asm.emitLine();
-        for (XCFGNode node : cfg.globalNodes) {
-            XIRInst i1 = new XIRInst(XIRInst.opType.op_mov);
-            i1.oprList.add(XIRInstAddr.newRegAddr(-1));
-            i1.oprList.add(XIRInstAddr.newRegAddr(-3));
-            node.instList.insertElementAt(i1,0);
-            XIRInst i2 = new XIRInst(XIRInst.opType.op_push);
-            i2.oprList.add(XIRInstAddr.newRegAddr(-1));
-            node.instList.insertElementAt(i2,0);
-            visitXCFGNode(node);
-        }
+        cfg.globalNodes.forEach(this::visitXCFGNode);
+        asm.emitLine();
+//        cfg.dataList.forEach(this::visitXIRData);
+        asm.defSection(ASMGenerator.sectType.DATA);
+        cfg.dataList.stream().filter(i -> i.dType != XIRData.dataType.d_res).forEach(this::visitXIRData);
+        asm.emitLine();
+        asm.defSection(ASMGenerator.sectType.BSS);
+        cfg.dataList.stream().filter(i -> i.dType == XIRData.dataType.d_res).forEach(this::visitXIRData);
     }
 
-    private void appendXCFGNode(XCFGNode node){
-        if (visitFlag.contains(node.nodeID)) return;
-        visitFlag.add(node.nodeID);
-        node.instList.forEach(this::visitXIRInst);
-        if (node.nextNode.size()==2){
-            appendXCFGNode(node.nextNode.get(1));
-        } else if (node.nextNode.size()==1 && node.instList.lastElement().op != XIRInst.opType.op_ret){
-            emitNASMInst(XIRInst.opType.op_jmp,XIRInstAddr.newJumpAddr(node.nextNode.get(0)),null);
-        } else {
-            System.out.println("NASMGen:end");
+    private void visitXIRData(XIRData data){
+        asm.emitLine(false,data.name+':');
+        switch (data.dType){
+            case d_num:{
+                StringBuilder sb = new StringBuilder();
+                sb.append("dw\t");
+                sb.append(data.val);
+                asm.emitLine(true,sb.toString());
+                break;
+            }
+            case d_res: {
+                StringBuilder sb = new StringBuilder();
+                sb.append("resw\t");
+                sb.append(data.size);
+                asm.emitLine(true,sb.toString());
+                break;
+            }
+            case d_str: {
+                StringBuilder sb = new StringBuilder();
+                sb.append("db\t");
+                sb.append(data.strval);
+                asm.emitLine(true,sb.toString());
+                break;
+            }
         }
     }
 
     private void visitXCFGNode(XCFGNode node) {
-        System.out.println("visit:"+node.nodeID);
         if (visitFlag.contains(node.nodeID)) return;
-        asm.defLabel(getLabel(node));
-        appendXCFGNode(node);
-        node.nextNode.forEach(this::visitXCFGNode);
+        System.out.println("visit:"+node);
+        asm.defLabel(node.name);
+        visitFlag.add(node.nodeID);
+        if (!node.instList.isEmpty()) {
+            XIRInst lastInst = node.instList.lastElement();
+            if (lastInst.op == XIRInst.opType.op_jcc
+                    || lastInst.op == XIRInst.opType.op_jmp){
+                lastInst.oprList.firstElement().str = node.nextNode.firstElement().name;
+//                nextJumpNode = node.nextNode.firstElement();
+            }
+        }
+        node.instList.forEach(this::visitXIRInst);
+        if (node.nextNode.size()==1 && (node.instList.isEmpty()
+                || node.instList.lastElement().op != XIRInst.opType.op_ret)
+                && visitFlag.contains(node.nextNode.firstElement().nodeID)){
+            emitNASMInst(XIRInst.opType.op_jmp,XIRInstAddr.newJumpAddr(node.nextNode.get(0)),null);
+        } else {
+            System.out.println("NASMGen:end");
+        }
+        Vector<XCFGNode> nextNode = node.nextNode;
+        for (int i = nextNode.size()-1; i >= 0; --i) {
+            XCFGNode xcfgNode = nextNode.get(i);
+            visitXCFGNode(xcfgNode);
+        }
     }
 
     private NASMReg getNASMReg(int num, NASMWordType wt) {
@@ -89,11 +120,6 @@ public class NASMGenerator {
         return reg;
     }
 
-    private String getLabel(XCFGNode node){
-        if (node.name!=null) return node.name;
-        return "_L"+Integer.toHexString(node.nodeID);
-    }
-
     private NASMAddr getNASMAddr(XIRInstAddr opr){
         if (opr == null) return null;
         switch (opr.type){
@@ -105,12 +131,20 @@ public class NASMGenerator {
             }
             case a_mem:{
                 NASMWordType wt = NASMWordType.DWORD;
-                NASMReg base = getNASMReg(opr.lit1,NASMWordType.QWORD);
-                NASMReg offset = getNASMReg(opr.lit2,NASMWordType.QWORD);
+                NASMReg base = getNASMReg(opr.lit1,NASMWordType.DWORD);
+                NASMReg offset = getNASMReg(opr.lit2,NASMWordType.DWORD);
                 return new NASMMemAddr(wt,base,offset,opr.lit3,opr.lit4);
             }
             case a_label:{
-                return new NASMLabelAddr(getLabel(cfg.getNode(opr.lit1)));
+//                if (nextJumpNode == null)
+                return new NASMLabelAddr(opr.str);
+//                String label = nextJumpNode.name;
+//                nextJumpNode = null;
+//                return new NASMLabelAddr(label);
+//                return new NASMLabelAddr(getLabel(cfg.getNode(opr.lit1)));
+            }
+            case a_static:{
+                return new NASMMemAddr(NASMWordType.DWORD,new NASMReg(opr.str),null,0,0);
             }
         }
         return null;
@@ -213,12 +247,6 @@ public class NASMGenerator {
         instList.add(inst);
         asm.emitText(inst.toString());
     }
-
-//    private void emitNASMInst(NASMInst inst){
-//        System.out.println("NASMGen:emitInst:"+inst);
-//        instList.add(inst);
-//        asm.emitText(inst.toString());
-//    }
 
     private void visitXIRInst(XIRInst inst){
         if (inst.oprList.size()==3){
