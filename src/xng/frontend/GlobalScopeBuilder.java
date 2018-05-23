@@ -97,7 +97,7 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
         if (node.isConstructor) {
             System.out.println("found constructor:");
             if (node.name.equals(curClassName)){
-                SST.regSymbol(getScopeName(node.name, true), type, 0, curClassName, null, node);
+                node.startNode = SST.regSymbol(getScopeName(node.name, true), type, 0, curClassName, null, node).startNode;
                 SymbolID curClass = SST.findSymbol(curClassName);
                 curClass.type.typeList.add(type);
             } else {

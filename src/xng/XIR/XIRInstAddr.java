@@ -10,6 +10,8 @@ public class XIRInstAddr {
     public int lit3; //scale
     public int lit4; //num
     public String str = null;
+    public XIRInstAddr addr1;
+    public XIRInstAddr addr2;
 
     public XIRInstAddr(addrType _t, int _l1, int _l2, int _l3, int _l4){
         type = _t;
@@ -81,26 +83,20 @@ public class XIRInstAddr {
         return new XIRInstAddr(addrType.a_imm,l1,l2,0,0);
     }
 
-    public static XIRInstAddr newMemAddr(XIRInstAddr base, XIRInstAddr ofs){
-        System.out.println("XIRInstAddr:new mem:"+base+' '+ofs);
-        return new XIRInstAddr(addrType.a_mem,base.lit1,0,0,ofs.lit1);
-    }
-
     public static XIRInstAddr newMemAddr(XIRInstAddr base, XIRInstAddr ofs, int scale, int num){
         System.out.println("XIRInstAddr:new mem:"+base+' '+ofs+' '+scale+' '+num);
-        return new XIRInstAddr(addrType.a_mem,base.lit1,ofs.lit1,scale,num);
-    }
-
-    public static XIRInstAddr newMemAddr(XIRInstAddr base){
-        System.out.println("XIRInstAddr:new mem:"+base);
-        return new XIRInstAddr(addrType.a_mem,base.lit1,0,0,0);
+        XIRInstAddr inst = new XIRInstAddr(addrType.a_mem,0,0,scale,num);
+        inst.addr1 = base;
+        inst.addr2 = ofs;
+        return inst;
     }
 
     @Override
     public String toString() {
         switch (type){
             case a_mem:
-                return "("+type.toString()+' '+lit1 + ' '+ lit2 + ' '+ lit3 +' '+ lit4 +") ";
+                if (addr1==null) return "("+type.toString()+' '+lit1 + ' '+ lit2 + ' '+ lit3 +' '+ lit4 +") ";
+                return "("+type.toString()+' '+addr1 + ' '+ addr2 + ' '+ lit3 +' '+ lit4 +") ";
             case a_reg:
                 return "("+type.toString()+' '+lit1 + ") ";
             case a_imm:

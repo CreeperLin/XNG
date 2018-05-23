@@ -8,7 +8,7 @@ public class XIRInst {
         op_sub,op_pos,op_mult,op_div,
         op_mod,op_not,op_neg,op_and,op_or,
         op_xor,op_shl,op_shr,op_mov,op_push,op_pop,op_wpara,op_rpara,
-        op_eq,op_ne,op_le,op_ge,op_dec,op_inc,op_jcc,op_jmp,
+        op_eq,op_ne,op_le,op_ge,op_dec,op_inc,op_jcc,op_jmp,op_lea,
         op_phi,op_gt,op_lt,op_ret,op_int,op_decl
     }
 

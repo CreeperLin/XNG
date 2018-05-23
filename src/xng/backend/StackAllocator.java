@@ -29,7 +29,7 @@ public class StackAllocator {
     private void visitXCFGNode(XCFGNode node) {
         if (visitFlag.contains(node.nodeID)) return;
         visitFlag.add(node.nodeID);
-//        System.out.println("allocating "+node);
+        System.out.println("allocating "+node.nodeID);
         node.instList.forEach(this::visitXIRInst);
         node.nextNode.forEach(this::visitXCFGNode);
     }
@@ -47,7 +47,7 @@ public class StackAllocator {
                     } else base = basePtMap.get(id);
                 } else {
                     curStackPt += t;
-                    System.out.println("dbg:"+curStackPt);
+//                    System.out.println("dbg:"+curStackPt);
                 }
                 System.out.println("StackAllocator:"+id+" "+base+" "+i.lit3);
                 i.type = XIRInstAddr.addrType.a_mem;

@@ -10,7 +10,7 @@ public class NASMGenerator {
     private Vector<NASMInst> instList = new Vector<>();
 
     private HashMap<Integer,NASMReg> regMap = new HashMap<>();
-    private int[] availReg = {16,17,18,19,1,2,3,4,5,6,7};
+    private int[] availReg = {17,18,19,1,2,3,4,5,6,7,16};
     private int[] paramReg = {22,23,19,18,8,9};
     private int curAvailReg = 0;
     private int curParamReg = 0;
@@ -44,29 +44,25 @@ public class NASMGenerator {
 
     private void visitXIRData(XIRData data){
         asm.emitLine(false,data.name+':');
+        StringBuilder sb = new StringBuilder();
         switch (data.dType){
             case d_num:{
-                StringBuilder sb = new StringBuilder();
                 sb.append("dw\t");
                 sb.append(data.val);
-                asm.emitLine(true,sb.toString());
                 break;
             }
             case d_res: {
-                StringBuilder sb = new StringBuilder();
                 sb.append("resw\t");
                 sb.append(data.size);
-                asm.emitLine(true,sb.toString());
                 break;
             }
             case d_str: {
-                StringBuilder sb = new StringBuilder();
                 sb.append("db\t");
                 sb.append(data.strval);
-                asm.emitLine(true,sb.toString());
                 break;
             }
         }
+        asm.emitLine(true,sb.toString());
     }
 
     private void visitXCFGNode(XCFGNode node) {
@@ -131,9 +127,63 @@ public class NASMGenerator {
             }
             case a_mem:{
                 NASMWordType wt = NASMWordType.DWORD;
-                NASMReg base = getNASMReg(opr.lit1,NASMWordType.DWORD);
-                NASMReg offset = getNASMReg(opr.lit2,NASMWordType.DWORD);
-                return new NASMMemAddr(wt,base,offset,opr.lit3,opr.lit4);
+                NASMReg base = null;
+                NASMReg offset = null;
+                int val = opr.lit4;
+                if (opr.addr1==null) {
+                    base = getNASMReg(opr.lit1,NASMWordType.DWORD);
+                    offset = getNASMReg(opr.lit2,NASMWordType.DWORD);
+                } else {
+                    switch (opr.addr1.type){
+                        case a_label:
+                        case a_stack:
+                            break;
+                        case a_static: {
+                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
+                            emitNASMInst(XIRInst.opType.op_lea,tmp,opr.addr1);
+                            base = getNASMReg(tmp.lit1,NASMWordType.DWORD);
+                            break;
+                        }
+                        case a_mem:{
+                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
+                            emitNASMInst(XIRInst.opType.op_mov,tmp,opr.addr1);
+                            base = getNASMReg(tmp.lit1,NASMWordType.DWORD);
+                            break;
+                        }
+                        case a_reg:
+                            base = getNASMReg(opr.addr1.lit1,NASMWordType.DWORD);
+                            break;
+                        case a_imm:
+                            base = null;
+                            val += opr.addr1.lit1;
+                            break;
+                    }
+                    switch (opr.addr2.type){
+                        case a_label:
+                        case a_stack:
+                            break;
+                        case a_static: {
+                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
+                            emitNASMInst(XIRInst.opType.op_lea,tmp,opr.addr2);
+                            offset = getNASMReg(tmp.lit1,NASMWordType.DWORD);
+                            break;
+                        }
+                        case a_mem:{
+                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
+                            emitNASMInst(XIRInst.opType.op_lea,tmp,opr.addr2);
+                            offset = getNASMReg(tmp.lit1,NASMWordType.DWORD);
+                            break;
+                        }
+                        case a_reg:
+                            offset = getNASMReg(opr.addr2.lit1,NASMWordType.DWORD);
+                            break;
+                        case a_imm:
+                            offset = null;
+                            val += opr.lit3 * opr.addr2.lit1;
+                            break;
+                    }
+                }
+                return new NASMMemAddr(wt,base,offset,opr.lit3, val);
             }
             case a_label:{
 //                if (nextJumpNode == null)
@@ -154,6 +204,8 @@ public class NASMGenerator {
         switch (op){
             case op_mov:
                 return NASMOp.opType.MOV;
+            case op_lea:
+                return NASMOp.opType.LEA;
             case op_jcc:
                 return NASMOp.newJccRevOp(lastOp);
             case op_jmp:
