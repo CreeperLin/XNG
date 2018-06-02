@@ -1,6 +1,8 @@
 package xng.backend;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.IOException;
 
 public class ASMGenerator {
@@ -19,7 +21,19 @@ public class ASMGenerator {
 
     private void outputHeader(){
         emitLine(false,"default rel");
-        emitLine();
+        String libPath = "./lib/lib.asm";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(libPath));
+            String t;
+            while((t=br.readLine())!=null){
+                bw.write(t);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("lib append failed");
+//            e.printStackTrace();
+            return;
+        }
     }
 
     public void emitLine(){

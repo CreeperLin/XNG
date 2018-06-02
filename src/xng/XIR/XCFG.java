@@ -4,7 +4,7 @@ import java.util.*;
 
 public class XCFG {
 //    Vector<XCFGNode> nodes = new Vector<>();
-    HashSet<XCFGNode> nodes = new HashSet<>();
+    private HashSet<XCFGNode> nodes = new HashSet<>();
     public Vector<XCFGNode> globalNodes = new Vector<>();
     public Vector<XIRData> dataList = new Vector<>();
     public XCFGNode entryNode = null;

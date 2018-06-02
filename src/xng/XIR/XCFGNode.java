@@ -9,6 +9,7 @@ public class XCFGNode {
     public Vector<XIRInst> instList = new Vector<>();
     public Vector<XCFGNode> prevNode = new Vector<>();
     public Vector<XCFGNode> nextNode = new Vector<>();
+    public int stackSize;
 
     public XCFGNode(int _nodeID) {
         nodeID = _nodeID;

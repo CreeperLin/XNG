@@ -30,7 +30,7 @@ public class XCFGReduce {
     private void visitXCFGNode(XCFGNode node) {
         if (node == null || visitFlag.contains(node.nodeID)) return;
         visitFlag.add(node.nodeID);
-        System.out.println("reducing "+node);
+        System.out.println("reducing "+node.nodeID);
         while (node.nextNode.size()==1 && (node.nextNode.firstElement().prevNode.size()==1
                 || node.instList.isEmpty())){
             visitFlag.add(node.nextNode.firstElement().nodeID);

@@ -126,7 +126,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
             }
         }
         if (curClassName == null || curFuncName != null) {
-            SST.regSymbol(getScopeName(node.name), new SymbolType(node.type),0,curClassName,curFuncName,node);
+            SST.regSymbol(getScopeName(node.name), new SymbolType(node.type),curClassName,curFuncName,node);
         }
     }
     public void visitTypeNode(XASTTypeNode node){
@@ -425,8 +425,12 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 node.type = SymbolType.strType;
                 break;
             case p_this:
-                out.println("prim this:"+curClassName);
-                node.type = new SymbolType(SymbolType.typType.CLASS,curClassName,0);
+                if (curClassName == null) {
+                    ce.add(XCompileError.ceType.ce_outofclass,"this",node);
+                } else {
+                    out.println("prim this:"+curClassName);
+                    node.type = new SymbolType(SymbolType.typType.CLASS,curClassName,0);
+                }
                 break;
             case p_id: {
                 String finalName;
@@ -463,11 +467,14 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     ce.add(XCompileError.ceType.ce_type, "creator:idx:" + i.type, i);
                 }
             }
-        } else {
+            node.type = new SymbolType(node.ctype);
+        } else if (node.ctype.className!=null) {
             SymbolID classSym = SST.findSymbol(node.ctype.className);
             if (classSym == null) {
                 ce.add(XCompileError.ceType.ce_nodecl,"class creator:"+node.ctype.className,node);
-            } else if (node.exprList != null && node.exprList.size()>0) {
+                return;
+            }
+            if (node.exprList != null) {
                 Vector<SymbolType> plist = new Vector<>();
                 node.exprList.forEach(i->{
                     visitExpr(i);
@@ -478,15 +485,16 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     int r = checkFuncParam(plist,t);
                     if (r==0) {
                         matched = true;
+                        node.hasConstructor = true;
                         break;
                     }
                 }
-                if (!matched) {
+                if (!matched && !node.exprList.isEmpty()) {
                     ce.add(XCompileError.ceType.ce_type,"class constructor",node);
                 }
             }
+            node.type = classSym.type;
         }
-        node.type = new SymbolType(node.ctype);
         out.println("creator:"+node.ctype.nodeID.toString()+":"+node.type);
     }
 

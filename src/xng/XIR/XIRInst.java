@@ -9,7 +9,20 @@ public class XIRInst {
         op_mod,op_not,op_neg,op_and,op_or,
         op_xor,op_shl,op_shr,op_mov,op_push,op_pop,op_wpara,op_rpara,
         op_eq,op_ne,op_le,op_ge,op_dec,op_inc,op_jcc,op_jmp,op_lea,
-        op_phi,op_gt,op_lt,op_ret,op_int,op_decl
+        op_phi,op_gt,op_lt,op_ret,op_int,op_decl;
+
+        public static boolean isCompare(opType t) {
+            switch (t) {
+                case op_eq:
+                case op_ne:
+                case op_ge:
+                case op_gt:
+                case op_le:
+                case op_lt:
+                    return true;
+            }
+            return false;
+        }
     }
 
     public opType op;

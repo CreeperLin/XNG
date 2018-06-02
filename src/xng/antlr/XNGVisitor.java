@@ -350,8 +350,35 @@ public class XNGVisitor extends MxBaseVisitor<XASTBaseNode>{
         }
         if (ctx.StrLiteral() != null){
             String t = ctx.StrLiteral().getSymbol().getText();
+            t=t.substring(1,t.length()-1);
+            StringBuilder sb = new StringBuilder();
+            char[] charArray = t.toCharArray();
+            for (int i1 = 0; i1 < charArray.length; i1++) {
+                char i = charArray[i1];
+                if (i=='\\'){
+                    switch (charArray[++i1]){
+                        case 'n':
+                            sb.append('\n');
+                            break;
+                        case 't':
+                            sb.append('\t');
+                            break;
+                        case '\\':
+                            sb.append('\\');
+                            break;
+                        case '\'':
+                            sb.append('\'');
+                            break;
+                        case '"':
+                            sb.append('"');
+                            break;
+                        default:
+                            System.out.println("error:esc seq"+charArray[i1]);
+                    }
+                } else sb.append(i);
+            }
 //            out.println("strLiteral:\""+t+"\"");
-            return new XASTPrimNode(new SrcPos(ctx.StrLiteral()),XASTNodeID.p_lit_str, 0, t);
+            return new XASTPrimNode(new SrcPos(ctx.StrLiteral()),XASTNodeID.p_lit_str, 0, sb.toString());
         }
         if (ctx.IntLiteral() != null){
             int t = Integer.parseInt(ctx.IntLiteral().getSymbol().getText());

@@ -4,58 +4,85 @@ public class NASMReg{
 
     public enum regType {
         NONE,REL,
-        R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13,R14,R15,RAX,RBX,RCX,RDX,RSP,RBP,RSI,RDI,RIP,
-        R0D,R1D,R2D,R3D,R4D,R5D,R6D,R7D,R8D,R9D,R10D,R11D,R12D,R13D,R14D,R15D,EAX,EBX,ECX,EDX,EBP,ESI,EDI,ESP,EIP,
-        R0W,R1W,R2W,R3W,R4W,R5W,R6W,R7W,R8W,R9W,R10W,R11W,R12W,R13W,R14W,R15W,AX,BX,CX,DX,BP,SI,DI,SP,
+        R8,R9,R10,R11,R12,R13,R14,R15,RAX,RBX,RCX,RDX,RSP,RBP,RSI,RDI,RIP,
+        R8D,R9D,R10D,R11D,R12D,R13D,R14D,R15D,EAX,EBX,ECX,EDX,EBP,ESI,EDI,ESP,EIP,
+        R8W,R9W,R10W,R11W,R12W,R13W,R14W,R15W,AX,BX,CX,DX,BP,SI,DI,SP,
     }
 
-    public regType type;
-    public String staticName;
+    private int regId;
+    NASMWordType wt;
+    private String staticName;
 
-    public NASMReg(regType _t){
-        type = _t;
-    }
-
-    public NASMReg(String str)
+    NASMReg(String str)
     {
-        type = regType.REL;
+        regId = -1;
         staticName = str;
     }
 
-    public NASMReg(int id, NASMWordType wt){
-        type = getSpecReg(id,wt);
+    public NASMReg(regType t) {
+        wt = NASMWordType.QWORD;
+        regId = getRegId(t);
     }
 
-    public static int getRegId(regType reg){
-        switch (reg){
-            case R0:
-            case R0D:
-                return 1;
-            case R1:
-            case R1D:
-                return 2;
+    NASMReg(int id, NASMWordType _wt){
+        regId = id;
+        wt = _wt;
+    }
+
+    private static int getRegId(NASMReg.regType t){
+        switch (t) {
+            case R8:
+                return 8;
+            case R9:
+                return 9;
+            case R10:
+                return 10;
+            case R11:
+                return 11;
+            case R12:
+                return 12;
+            case R13:
+                return 13;
+            case R14:
+                return 14;
+            case R15:
+                return 15;
+            case RAX:
+                return 16;
+            case RBX:
+                return 17;
+            case RCX:
+                return 18;
+            case RDX:
+                return 19;
+            case RSP:
+                return 20;
+            case RBP:
+                return 21;
+            case RSI:
+                return 22;
+            case RDI:
+                return 23;
+            case REL:
+                return -1;
         }
         return 0;
     }
 
-    public static NASMReg.regType getSpecReg(int regID, NASMWordType word) {
-        switch (word) {
+    private NASMReg.regType getSpecReg() {
+        switch (wt) {
             case WORD:
-                return getWORDReg(regID);
+                return getWORDReg(regId);
             case DWORD:
-                return getDWORDReg(regID);
+                return getDWORDReg(regId);
             case QWORD:
-                return getQWORDReg(regID);
+                return getQWORDReg(regId);
         }
         return regType.NONE;
     }
 
-    public static regType getWORDReg(int regID){
+    private static regType getWORDReg(int regID){
         switch (regID){
-            case 1:
-                return regType.R1W;
-            case 2:
-                return regType.R2W;
             case 8:
                 return regType.R8W;
             case 9:
@@ -92,12 +119,8 @@ public class NASMReg{
         return regType.NONE;
     }
 
-    public static regType getDWORDReg(int regID){
+    private static regType getDWORDReg(int regID){
         switch (regID){
-            case 1:
-                return regType.R1D;
-            case 2:
-                return regType.R2D;
             case 8:
                 return regType.R8D;
             case 9:
@@ -134,12 +157,8 @@ public class NASMReg{
         return regType.NONE;
     }
 
-    public static regType getQWORDReg(int regID){
+    private static regType getQWORDReg(int regID){
         switch (regID){
-            case 1:
-                return regType.R1;
-            case 2:
-                return regType.R2;
             case 8:
                 return regType.R8;
             case 9:
@@ -178,12 +197,12 @@ public class NASMReg{
 
     @Override
     public String toString() {
-        if (type==regType.REL) return "rel "+staticName;
-        return type.name().toLowerCase();
+        if (regId == -1) return "rel "+staticName;
+        return getSpecReg().name().toLowerCase();
     }
 
     @Override
     public boolean equals(Object o) {
-        return type == ((NASMReg)o).type;
+        return (o instanceof NASMReg) && regId == ((NASMReg)o).regId && wt == ((NASMReg)o).wt;
     }
 }

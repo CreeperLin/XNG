@@ -19,6 +19,7 @@ public class SymbolType {
     public typType declType;
     public String className;
     public int arrayDim;
+    public int classMemSize = 0;
     public Vector<SymbolType> typeList = null;
 
     public SymbolType(typType _t,String _n,int _d){
@@ -39,6 +40,23 @@ public class SymbolType {
         className = null;
         arrayDim = 0;
         typeList = _v;
+    }
+
+    public int getMemSize() {
+        if (arrayDim>0) return 8;
+        switch (declType){
+            case INT:
+            case BOOL:
+            case NULL:
+            case STR:
+                return 8;
+            case FUNC:
+            case VOID:
+                return 0;
+            case CLASS:
+                return classMemSize;
+        }
+        return 0;
     }
 
     public SymbolType(XASTTypeNode node){

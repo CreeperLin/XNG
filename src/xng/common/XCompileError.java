@@ -27,7 +27,7 @@ public class XCompileError {
 
     public void add(ceType type, String msg, SrcPos pos, boolean isError) {
         StringBuilder m = new StringBuilder();
-        String line = srcLines.elementAt(pos.startLine - 1);
+        String line = srcLines.isEmpty()?null:srcLines.elementAt(pos.startLine - 1);
         m.append(pos.toString()).append(isError ? " error: " : " warning: ").append(type.toString()).append(":").append(msg).append('\n').append(line).append('\n');
         for (int i = 0; i < pos.startColumn; ++i) {
             m.append(((line.charAt(i) == '\t') ? '\t' : ' '));
@@ -55,6 +55,7 @@ public class XCompileError {
         ce_redef,
         ce_nodecl,
         ce_outofloop,
+        ce_outofclass,
         ce_type,
         ce_lvalue,
 

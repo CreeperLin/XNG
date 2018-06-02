@@ -8,7 +8,7 @@ import java.util.HashSet;
 public class StackAllocator {
 
     private XCFG cfg;
-    int curStackPt = 4;
+    private int curStackPt = 8;
     private HashSet<Integer> visitFlag = new HashSet<>();
     private HashMap<Integer,Integer> basePtMap = new HashMap<>();
 //    private HashSet<XIRInstAddr> globalVar = new HashSet<>();
@@ -22,7 +22,8 @@ public class StackAllocator {
         System.out.println("StackAllocation begin");
         for (XCFGNode globalNode : cfg.globalNodes) {
             visitXCFGNode(globalNode);
-            curStackPt = 4;
+            globalNode.stackSize = curStackPt;
+            curStackPt = 8;
         }
     }
 

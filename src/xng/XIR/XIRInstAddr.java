@@ -1,5 +1,8 @@
 package xng.XIR;
 
+import xng.opt.VarAnalyzer;
+import xng.opt.VarInfo;
+
 public class XIRInstAddr {
     public enum addrType{
         a_imm,a_reg,a_mem,a_stack,a_static,a_label
@@ -12,6 +15,7 @@ public class XIRInstAddr {
     public String str = null;
     public XIRInstAddr addr1;
     public XIRInstAddr addr2;
+    public VarInfo info = new VarInfo();
 
     public XIRInstAddr(addrType _t, int _l1, int _l2, int _l3, int _l4){
         type = _t;
@@ -57,11 +61,11 @@ public class XIRInstAddr {
         return new XIRInstAddr(addrType.a_stack,stackCount++,size,0,0);
     }
 
-    public static XIRInstAddr newStackAddr(int id, int size, int ofs){
-        int c = stackCount++;
-        System.out.println("XIRInstAddr:new stack:"+c+":"+ofs);
-        return new XIRInstAddr(addrType.a_stack,c,size,ofs,id==0?c:id);
-    }
+//    public static XIRInstAddr newStackAddr(int id, int size, int ofs){
+//        int c = stackCount++;
+//        System.out.println("XIRInstAddr:new stack:"+c+":"+ofs);
+//        return new XIRInstAddr(addrType.a_stack,c,size,ofs,id==0?c:id);
+//    }
 
     public static XIRInstAddr newJumpAddr(XCFGNode node){
         XIRInstAddr addr = new XIRInstAddr(addrType.a_label,node.nodeID,0,0,0);
@@ -89,6 +93,14 @@ public class XIRInstAddr {
         inst.addr1 = base;
         inst.addr2 = ofs;
         return inst;
+    }
+
+    public boolean isConst(){
+        return (type == addrType.a_imm) || (info.type == VarInfo.valType.v_const);
+    }
+
+    public int getConst() {
+        return (type == addrType.a_imm) ? lit1 : ((info.type == VarInfo.valType.v_const)? info.constValue : 0);
     }
 
     @Override

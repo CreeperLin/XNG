@@ -21,6 +21,7 @@ import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
 import xng.frontend.XIRGenerator;
 import xng.opt.SSAConverter;
+import xng.opt.VarAnalyzer;
 import xng.opt.XCFGReduce;
 
 import java.io.*;
@@ -99,14 +100,15 @@ public class XWrapper {
 
         if (!XParameter.isEnableIR) return;
 
-        new XIRGenerator(cfg,SST).visitCUNode(prog);
+        new XIRGenerator(cfg).visitCUNode(prog);
         cfg.print();
 
         new XCFGReduce(cfg);
-        cfg.print();
+//        cfg.print();
 
         if (XParameter.isEnableOptimization) {
             out.println("opt");
+//            new VarAnalyzer(cfg);
         }
 
         if (!XParameter.isEnableAssembly) return;

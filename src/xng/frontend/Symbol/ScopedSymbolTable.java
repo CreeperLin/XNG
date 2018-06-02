@@ -47,32 +47,16 @@ public class ScopedSymbolTable {
         out.println("SST:push scope:"+scopeName+" cur:"+symTableStack.size());
     }
 
-    public int getSymTypeMemSize(SymbolType type){
-        switch (type.declType){
-            case INT:
-            case BOOL:
-            case NULL:
-            case STR:
-                return 4;
-            case FUNC:
-            case VOID:
-                return 0;
-            case CLASS:
-                return findSymbol(type.className).tag;
-        }
-        return 0;
-    }
-
     public void regSymbol(String str, SymbolID sym) {
         if (sym == null) return;
         symTableStack.peek().symTable.put(str,sym);
     }
 
-    public SymbolID regSymbol(String str, SymbolType type, Integer tag, XASTBaseNode node) {
-        return regSymbol(str,type,tag,null,null,node);
+    public SymbolID regSymbol(String str, SymbolType type, XASTBaseNode node) {
+        return regSymbol(str,type,null,null,node);
     }
 
-    public SymbolID regSymbol(String name, SymbolType type, Integer tag, String curClassName, String curFuncName, XASTBaseNode node){
+    public SymbolID regSymbol(String name, SymbolType type, String curClassName, String curFuncName, XASTBaseNode node){
 //        if (symTableStack.peek().symTable.containsKey(name) || symTableStack.elementAt(0).symTable.containsKey(name)) {
         if (symTableStack.peek().symTable.containsKey(name)) {
             ce.add(XCompileError.ceType.ce_redef,type+" "+name,node);
@@ -81,12 +65,17 @@ public class ScopedSymbolTable {
         if (XParameter.isWarningAll && findSymbol(name)!=null) {
             ce.add(XCompileError.ceType.cw_shadow,name,node,false);
         }
-        SymbolID sym = new SymbolID(type,++symCount,tag);
+        SymbolID sym = new SymbolID(type,++symCount);
         if (type.declType == SymbolType.typType.FUNC){
             if (symTableStack.size() == 1) {
                 sym.startNode = cfg.addNode();
-                if (curClassName==null) sym.startNode.name = "_FUNC_"+name;
-                else sym.startNode.name = "_CMEM_"+name;
+                if (curClassName==null) sym.startNode.name = "_func_"+name;
+                else if (curClassName.equals("_lib_")) {
+                    if (name.startsWith("string")){
+                        sym.startNode.name = "_lib_str_"+name.substring(7);
+                    } else sym.startNode.name = "_lib_"+name;
+                }
+                else sym.startNode.name = "_class_"+name;
                 sym.reg = XIRInstAddr.newRegAddr();
             }
         } else if (node instanceof XASTVarDeclNode) {
@@ -96,25 +85,26 @@ public class ScopedSymbolTable {
 //                    ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
 //                } else
                 if (type.declType == SymbolType.typType.CLASS){
-                    ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(0,getSymTypeMemSize(type),0);
-                } else ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(getSymTypeMemSize(type));
+                    ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(8);
+                } else ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(type.getMemSize());
             } else if (curClassName != null){
                 SymbolID classSym;
                 if ((classSym=findSymbol(curClassName))==null){
                     ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
                 } else {
-                    sym.tag = classSym.tag;
-                    ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newImmAddr(sym.tag,0);
-                    classSym.tag += 4;
+                    int sz = classSym.type.getMemSize();
+//                    System.out.println("SST:dbg:"+sz);
+                    ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newImmAddr(sz,0);
+                    classSym.type.classMemSize += type.getMemSize();
                 }
             } else {
-                int size = getSymTypeMemSize(type);
-                cfg.dataList.add(new XIRData(name,size,false));
-                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newStaticAddr(name,size);
+                int size = type.getMemSize();
+                String varName = "_v_"+name;
+                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newMemAddr(XIRInstAddr.newStaticAddr(varName,size),null,0,0);
             }
         }
         symTableStack.peek().symTable.put(name,sym);
-        out.println("sym reg:"+symTableStack.peek().scopeName+":"+name+":"+type+' '+sym.reg+' '+sym.tag+":"+symCount);
+        out.println("sym reg:"+symTableStack.peek().scopeName+":"+name+":"+type+' '+sym.reg+":"+symCount);
         return sym;
     }
 
