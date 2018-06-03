@@ -14,7 +14,6 @@ public class NASMGenerator {
     private int[] paramReg = {23,22,19,18,8,9};
     private int curAvailReg = 0;
     private int curStackOffset = 0;
-    private boolean isFirstNode = false;
     private HashSet<Integer> visitFlag = new HashSet<>();
 //    private XCFGNode nextJumpNode = null;
 
@@ -34,7 +33,6 @@ public class NASMGenerator {
         cfg.dataList.stream().map(data -> data.name).forEach(asm::defGlobal);
         asm.emitLine();
         for (XCFGNode globalNode : cfg.globalNodes) {
-            isFirstNode = true;
             visitXCFGNode(globalNode);
             curAvailReg = 0;
         }
@@ -99,7 +97,7 @@ public class NASMGenerator {
 //                nextJumpNode = node.nextNode.firstElement();
             }
         }
-        if (isFirstNode) {
+        if (node.isGlobal) {
             XIRInst pi = new XIRInst(XIRInst.opType.op_push);
             pi.oprList.add(XIRInstAddr.newRegAddr(-1));
             visitXIRInst(pi);
@@ -115,7 +113,6 @@ public class NASMGenerator {
                 si.oprList.add(XIRInstAddr.newImmAddr(curStackOffset, 0));
                 visitXIRInst(si);
             }
-            isFirstNode = false;
         }
         node.instList.forEach(this::visitXIRInst);
         if (node.nextNode.size()==1 && (node.instList.isEmpty()
@@ -301,9 +298,9 @@ public class NASMGenerator {
             case op_ret:
                 return NASMOp.opType.RET;
             case op_shl:
-                return NASMOp.opType.SHL;
+                return NASMOp.opType.SAL;
             case op_shr:
-                return NASMOp.opType.SHR;
+                return NASMOp.opType.SAR;
             case op_sub:
                 return NASMOp.opType.SUB;
             case op_int:

@@ -14,56 +14,60 @@ void _lib_println(const char *str){
 
 char* _lib_getString() {
     char *t = (char*)malloc(256);
-    char c;
-    int i=0;
-    while (isspace(c = getchar()));
-    while (c!=EOF) {
-        if (isspace(c)) break;
-        t[i++] = c;
-        c = getchar();
-    }
-    t[i] = '\0';
+    scanf("%s",t);
+    /*char c;*/
+    /*int i=0;*/
+    /*while (isspace(c = getchar()));*/
+    /*while (c!=EOF) {*/
+        /*if (isspace(c)) break;*/
+        /*t[i++] = c;*/
+        /*c = getchar();*/
+    /*}*/
+    /*t[i] = '\0';*/
     return t;
     /*return fgets(t,100,stdin);*/
 }
 
 int _lib_getInt() {
-    char c;
-    int sgn = 0;
     int ret = 0;
-    while(isspace(c = getchar()));
-    if (c == '-') sgn = 1;
-    else if (!isdigit(c) && c != EOF && c != '+') {
-        ungetc(c,stdin);
-        return 0;
-    }
-    for (;isdigit(c);c=getchar()){
-        ret = ret * 10 + (c - '0');
-    }
-    if (sgn) ret = -ret;
+    scanf("%d",&ret);
+    /*char c;*/
+    /*int sgn = 0;*/
+    /*int ret = 0;*/
+    /*while(isspace(c = getchar()));*/
+    /*if (c == '-') sgn = 1;*/
+    /*else if (!isdigit(c) && c != EOF && c != '+') {*/
+        /*ungetc(c,stdin);*/
+        /*return 0;*/
+    /*}*/
+    /*for (;isdigit(c);c=getchar()){*/
+        /*ret = ret * 10 + (c - '0');*/
+    /*}*/
+    /*if (sgn) ret = -ret;*/
     return ret;
 }
 
 char* _lib_toString(long long num) {
     char *str = (char*)malloc(256);
-    int i = 0,k = 0;
-    if (num<0) {
-        num = -num;
-        str[i++] = '-';
-        k = 1;
-    }
-    do {
-        str[i++] = '0' + num % 10;
-        num /= 10;
-    } while(num);
-    str[i] = '\0';
-    char tmp;
-    for (;k<=(i-1)>>1;++k){
-        int j = i - k - 1;
-        tmp = str[k];
-        str[k] = str[j];
-        str[j] = tmp;
-    }
+    sprintf(str,"%d",num);
+    /*int i = 0,k = 0;*/
+    /*if (num<0) {*/
+        /*num = -num;*/
+        /*str[i++] = '-';*/
+        /*k = 1;*/
+    /*}*/
+    /*do {*/
+        /*str[i++] = '0' + num % 10;*/
+        /*num /= 10;*/
+    /*} while(num);*/
+    /*str[i] = '\0';*/
+    /*char tmp;*/
+    /*for (;k<=(i-1)>>1;++k){*/
+        /*int j = i - k - 1;*/
+        /*tmp = str[k];*/
+        /*str[k] = str[j];*/
+        /*str[j] = tmp;*/
+    /*}*/
     return str;
 }
 
@@ -83,15 +87,16 @@ char* _lib_str_substring(const char* t, int l, int r){
 }
 
 long long _lib_str_parseInt(const char *t){
-    int num = 0, sgn = 0;
-    while(isspace(*(t))) t++;
-    if (*t == '-') sgn = 1;
-    else if (!isdigit(*t) && *t != '+') return 0;
-    for (;isdigit(*t);++t) {
-        num = num * 10 + *t - '0';
-    }
-    if (sgn) num = -num;
-    return num;
+    return atol(t);
+    /*int num = 0, sgn = 0;*/
+    /*while(isspace(*(t))) t++;*/
+    /*if (*t == '-') sgn = 1;*/
+    /*else if (!isdigit(*t) && *t != '+') return 0;*/
+    /*for (;isdigit(*t);++t) {*/
+        /*num = num * 10 + *t - '0';*/
+    /*}*/
+    /*if (sgn) num = -num;*/
+    /*return num;*/
 }
 
 char* _lib_strcat(const char *s1, const char *s2) {
