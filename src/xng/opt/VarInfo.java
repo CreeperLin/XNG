@@ -12,6 +12,8 @@ public class VarInfo {
     public valType type;
 
     public int constValue;
+    public int readCount = 0;
+    public int writeCount = 0;
 
     public VarInfo() {
         type = valType.v_undef;
@@ -26,17 +28,14 @@ public class VarInfo {
         ans.type = isConst ? valType.v_const : valType.v_undef;
     }
 
-    public static void constPropagate(XIRInst inst) {
-        VarInfo inf1 = inst.oprList.size() > 0 ? inst.oprList.get(0).info : null;
+    public static void constPropagate(XIRInst.opType op,VarInfo inf1,VarInfo inf2,VarInfo inf3) {
         if (inf1==null) return;
-        VarInfo inf2 = inst.oprList.size() > 1 ? inst.oprList.get(1).info : null;
-        VarInfo inf3 = inst.oprList.size() > 2 ? inst.oprList.get(2).info : null;
         int const1 = inf1.constValue;
         int const2 = inf2 == null ? 0 : inf2.constValue;
         int const3 = inf3 == null ? 0 : inf3.constValue;
         int ans = 0;
         typePropagate(inf1,inf2,inf3);
-        switch (inst.op) {
+        switch (op) {
             case op_add:
                 ans = const2 + const3;
                 break;

@@ -100,7 +100,7 @@ public class ScopedSymbolTable {
             } else {
                 int size = type.getMemSize();
                 String varName = "_v_"+name;
-                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newMemAddr(XIRInstAddr.newStaticAddr(varName,size),null,0,0);
+                ((XASTVarDeclNode)node).reg = sym.reg = XIRInstAddr.newMemAddr(XIRInstAddr.newStaticAddr(varName,size),XIRInstAddr.newImmAddr(0,0),0,0);
             }
         }
         symTableStack.peek().symTable.put(name,sym);

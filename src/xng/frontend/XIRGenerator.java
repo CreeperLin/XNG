@@ -37,13 +37,14 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         XCFGNode staticInit;
         curStaticInit = staticInit = cfg.addNode();
         staticInit.name = "_static_init";
-        staticInit.isGlobal = true;
         for (XASTStmtNode n : node.declList) {
+            if (n instanceof XASTVarDeclNode) curFuncNode = staticInit;
             visitStmt(n);
         }
         if (curStaticInit == staticInit) return;
         curStaticInit.instList.add(new XIRInst(XIRInst.opType.op_ret));
-        cfg.globalNodes.add(staticInit);
+        XIRProcInfo staticInitProc = new XIRProcInfo(staticInit,curStaticInit);
+        cfg.Proc.add(staticInitProc);
         XIRInst call_inst = new XIRInst(XIRInst.opType.op_call);
         call_inst.oprList.add(XIRInstAddr.newJumpAddr(staticInit));
         cfg.entryNode.instList.insertElementAt(call_inst,0);
@@ -85,8 +86,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 curFuncRetNode.addInst(XIRInst.opType.op_ret);
         }
         node.endNode = curFuncRetNode;
-        cfg.globalNodes.add(node.startNode);
-        node.startNode.isGlobal = true;
+        cfg.Proc.add(new XIRProcInfo(node.startNode,node.endNode));
         if (node.name.equals("main")){
             cfg.entryNode = node.startNode;
             node.startNode.name = "main";
@@ -521,8 +521,8 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 XIRInst call_inst = new XIRInst(type);
 //                call_inst.oprList.add(node.exprList.firstElement().instAddr);
                 call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.toNode));
-                node.toNode.isCallee = true;
-                curFuncNode.isCaller = true;
+//                node.toNode.isCallee = true;
+//                curFuncNode.isCaller = true;
                 node.instList.add(call_inst);
                 XIRInst mv_inst = new XIRInst(XIRInst.opType.op_mov);
                 XIRInstAddr ret_addr = XIRInstAddr.newStackAddr(8);

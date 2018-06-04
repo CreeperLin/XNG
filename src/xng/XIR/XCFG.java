@@ -5,7 +5,7 @@ import java.util.*;
 public class XCFG {
 //    Vector<XCFGNode> nodes = new Vector<>();
     private HashSet<XCFGNode> nodes = new HashSet<>();
-    public Vector<XCFGNode> globalNodes = new Vector<>();
+    public Vector<XIRProcInfo> Proc = new Vector<>();
     public Vector<XIRData> dataList = new Vector<>();
     public XCFGNode entryNode = null;
 
@@ -63,7 +63,7 @@ public class XCFG {
         HashSet<Integer> visitFlag = new HashSet<>();
         ArrayDeque<XCFGNode> q = new ArrayDeque<>();
         q.add(entryNode);
-        globalNodes.forEach(q::add);
+        Proc.forEach(i-> q.add(i.entryNode));
         while(!q.isEmpty()){
             XCFGNode cur = q.peek();
             if (cur==null||visitFlag.contains(cur.nodeID)){

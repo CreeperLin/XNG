@@ -3,8 +3,8 @@ package xng.opt;
 import xng.XIR.XCFG;
 import xng.XIR.XCFGNode;
 import xng.XIR.XIRInst;
+import xng.XIR.XIRProcInfo;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 import java.util.Vector;
@@ -14,6 +14,7 @@ public class XCFGReduce {
     private XCFG cfg;
     private HashSet<Integer> visitFlag = new HashSet<>();
     private Stack<XCFGNode> visitStack = new Stack<>();
+    private boolean isGlobal;
 
     public XCFGReduce(XCFG _cfg){
         cfg = _cfg;
@@ -22,7 +23,12 @@ public class XCFGReduce {
 
     private void visitXCFG(){
         System.out.println("XCFGReduce begin");
-        cfg.globalNodes.forEach(visitStack::push);
+        isGlobal = true;
+        for (XIRProcInfo xirProcInfo : cfg.Proc) {
+            visitXCFGNode(xirProcInfo.entryNode);
+//            visitStack.push(xirProcInfo.entryNode);
+        }
+        isGlobal = false;
         while (!visitStack.empty()) {
             XCFGNode curNode = visitStack.pop();
             visitXCFGNode(curNode);
@@ -34,7 +40,7 @@ public class XCFGReduce {
         visitFlag.add(node.nodeID);
         System.out.println("reducing "+node.nodeID);
         while (node.nextNode.size()==1 && (node.nextNode.firstElement().prevNode.size()==1
-                || (node.instList.isEmpty()&&!node.isGlobal))){
+                || (node.instList.isEmpty()&&!isGlobal))){
             Vector<XIRInst> instList = node.instList;
             for (int i1 = 0; i1 < instList.size(); i1++) {
                 XIRInst i = instList.get(i1);

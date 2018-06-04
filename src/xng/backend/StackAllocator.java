@@ -20,9 +20,9 @@ public class StackAllocator {
 
     private void visitXCFG(){
         System.out.println("StackAllocation begin");
-        for (XCFGNode globalNode : cfg.globalNodes) {
-            visitXCFGNode(globalNode);
-            globalNode.stackSize = curStackPt;
+        for (XIRProcInfo i : cfg.Proc) {
+            visitXCFGNode(i.entryNode);
+            i.stackSize = curStackPt;
             curStackPt = 8;
         }
     }

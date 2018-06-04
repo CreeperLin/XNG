@@ -3,6 +3,8 @@ package xng.XIR;
 import xng.opt.VarAnalyzer;
 import xng.opt.VarInfo;
 
+import java.util.Objects;
+
 public class XIRInstAddr {
     public enum addrType{
         a_imm,a_reg,a_mem,a_stack,a_static,a_label
@@ -25,11 +27,26 @@ public class XIRInstAddr {
         lit4 = _l4;
     }
 
-    static int regCount = 1;
-    static int stackCount = 1;
+    private static int regCount = 1;
+    private static int stackCount = 1;
 
     public boolean equals(XIRInstAddr i) {
-        return i != null && this.type == i.type && this.lit1 == i.lit1 && this.lit2 == i.lit2 && this.lit3 == i.lit3 && this.lit4==i.lit4;
+        if (i == null || this.type != i.type) return false;
+        switch (type){
+            case a_mem:
+                return Objects.equals(addr1, i.addr1) && Objects.equals(addr2, i.addr2) && lit3 == i.lit3 && lit4 == i.lit4;
+            case a_reg:
+                return lit1 == i.lit1;
+            case a_imm:
+                return lit1 == i.lit1;
+            case a_stack:
+                return lit1 == i.lit1;
+            case a_static:
+                return Objects.equals(str, i.str);
+            case a_label:
+                return Objects.equals(str, i.str);
+        }
+        return false;
     }
 
     public static XIRInstAddr newStaticAddr(String name, int size){

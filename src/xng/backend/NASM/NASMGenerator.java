@@ -20,6 +20,7 @@ public class NASMGenerator {
     private int curAvailReg = 0;
     private int curStackOffset = 0;
     private int paramStackOffset = 0;
+    private XIRProcInfo curProcInfo = null;
     private HashSet<Integer> visitFlag = new HashSet<>();
     private XIRInstAddr lastDivOpr1;
     private XIRInstAddr lastDivOpr2;
@@ -39,11 +40,12 @@ public class NASMGenerator {
     }
 
     private void visitXCFG(){
-        cfg.globalNodes.stream().map(globalNode -> globalNode.name).forEach(asm::defGlobal);
+        cfg.Proc.stream().map(globalNode -> globalNode.entryNode.name).forEach(asm::defGlobal);
         cfg.dataList.stream().map(data -> data.name).forEach(asm::defGlobal);
         asm.emitLine();
-        for (XCFGNode globalNode : cfg.globalNodes) {
-            visitXCFGNode(globalNode);
+        for (XIRProcInfo i : cfg.Proc) {
+            curProcInfo = i;
+            visitXCFGNode(i.entryNode);
             curAvailReg = 0;
         }
         asm.emitLine();
@@ -120,7 +122,7 @@ public class NASMGenerator {
 //                nextJumpNode = node.nextNode.firstElement();
             }
         }
-        if (node.isGlobal) {
+        if (curProcInfo != null) {
             XIRInst pi = new XIRInst(XIRInst.opType.op_push);
             pi.oprList.add(XIRInstAddr.newRegAddr(-1));
             visitXIRInst(pi);
@@ -128,7 +130,8 @@ public class NASMGenerator {
             mi.oprList.add(XIRInstAddr.newRegAddr(-1));
             mi.oprList.add(XIRInstAddr.newRegAddr(-3));
             visitXIRInst(mi);
-            curStackOffset = node.stackSize > 8 ? Integer.max(getExp2Sup(node.stackSize),32) : 0;
+            int stsz = curProcInfo.stackSize;
+            curStackOffset = stsz > 8 ? Integer.max(getExp2Sup(stsz),32) : 0;
 //            curStackOffset = 32;
             if (curStackOffset != 0){
                 XIRInst si = new XIRInst(XIRInst.opType.op_sub);
@@ -136,6 +139,7 @@ public class NASMGenerator {
                 si.oprList.add(XIRInstAddr.newImmAddr(curStackOffset, 0));
                 visitXIRInst(si);
             }
+            curProcInfo = null;
         }
         node.instList.forEach(this::visitXIRInst);
         if (node.nextNode.size()==1 && (node.instList.isEmpty()
@@ -471,7 +475,7 @@ public class NASMGenerator {
         }
         NASMAddr a2 = getNASMAddr(opr2,wt2);
         NASMAddr a1 = getNASMAddr(opr1,wt1);
-        if (op == XIRInst.opType.op_mov && a1.equals(a2)) return;
+        if (op == XIRInst.opType.op_mov && Objects.equals(a1, a2)) return;
         switch (op){
             case op_wpara:
                 if (!isWParam) {
@@ -522,6 +526,7 @@ public class NASMGenerator {
     }
 
     private void visitXIRInst(XIRInst inst){
+//        System.out.println("DBGinst:"+inst);
         if (inst.oprList.size()==3) {
             XIRInstAddr opr1 = inst.oprList.get(0);
             XIRInstAddr opr2 = inst.oprList.get(1);
@@ -538,6 +543,12 @@ public class NASMGenerator {
                     emitNASMInst(XIRInst.opType.op_mov,opr1,tmp_addr);
                 }
             } else {
+//                if (inst.op == XIRInst.opType.op_add
+//                        && opr2.type == XIRInstAddr.addrType.a_reg
+//                        && opr3.type == XIRInstAddr.addrType.a_reg) {
+//                    emitNASMInst(XIRInst.opType.op_lea,opr1,XIRInstAddr.newMemAddr(opr2,opr3,1,0));
+//                    return;
+//                }
                 emitNASMInst(XIRInst.opType.op_mov,opr1,opr2);
                 emitNASMInst(inst.op,opr1,opr3);
             }
@@ -552,5 +563,6 @@ public class NASMGenerator {
             emitNASMInst(inst.op,null,null);
         }
         lastOp = inst.op;
+//        curAvailReg = 0;
     }
 }

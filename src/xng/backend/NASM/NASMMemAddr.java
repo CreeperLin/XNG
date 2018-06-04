@@ -31,7 +31,7 @@ public class NASMMemAddr extends NASMAddr {
         boolean opr = false;
         if (base!=null) {sb.append(base); opr = true;}
         if (offset!=null && opr) sb.append("+");
-        if (offset!=null) {sb.append(offset); if (scale!=0) sb.append('*').append(scale); opr = true;}
+        if (offset!=null) {sb.append(offset); if (scale!=0 && scale !=1) sb.append('*').append(scale); opr = true;}
         if (num>0) sb.append(opr ? "+" : "").append(getHex(num)).append('H');
         if (num<0) sb.append('-').append(getHex(-num)).append('H');
         sb.append(']');

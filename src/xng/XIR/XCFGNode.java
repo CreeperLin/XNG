@@ -1,5 +1,6 @@
 package xng.XIR;
 
+import java.util.HashSet;
 import java.util.Vector;
 
 public class XCFGNode {
@@ -9,10 +10,6 @@ public class XCFGNode {
     public Vector<XIRInst> instList = new Vector<>();
     public Vector<XCFGNode> prevNode = new Vector<>();
     public Vector<XCFGNode> nextNode = new Vector<>();
-    public int stackSize;
-    public boolean isGlobal = false;
-    public boolean isCaller = false;
-    public boolean isCallee = false;
 
     public XCFGNode(int _nodeID) {
         nodeID = _nodeID;
