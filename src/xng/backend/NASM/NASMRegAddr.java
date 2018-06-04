@@ -2,7 +2,7 @@ package xng.backend.NASM;
 
 public class NASMRegAddr extends NASMAddr {
 
-    private NASMReg reg;
+    NASMReg reg;
 
 //    NASMRegAddr(NASMReg.regType _r){
 //        reg = new NASMReg(_r);

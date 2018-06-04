@@ -90,8 +90,8 @@ public class XWrapper {
         XASTCUNode prog = new XNGVisitor(parser).visitCompilationUnit(tree);
         XCFG cfg = new XCFG();
 
-        XASTPrinter printer = new XASTPrinter();
-        printer.visitCUNode(prog);
+//        XASTPrinter printer = new XASTPrinter();
+//        printer.visitCUNode(prog);
 
         ScopedSymbolTable SST = new ScopedSymbolTable(cfg,compileError);
         new GlobalScopeBuilder(SST,compileError).visitCUNode(prog);

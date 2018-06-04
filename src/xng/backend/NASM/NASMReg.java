@@ -9,7 +9,7 @@ public class NASMReg{
         R8W,R9W,R10W,R11W,R12W,R13W,R14W,R15W,AX,BX,CX,DX,BP,SI,DI,SP,
     }
 
-    private int regId;
+    int regId;
     NASMWordType wt;
     private String staticName;
 

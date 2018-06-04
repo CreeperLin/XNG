@@ -11,6 +11,8 @@ public class XCFGNode {
     public Vector<XCFGNode> nextNode = new Vector<>();
     public int stackSize;
     public boolean isGlobal = false;
+    public boolean isCaller = false;
+    public boolean isCallee = false;
 
     public XCFGNode(int _nodeID) {
         nodeID = _nodeID;

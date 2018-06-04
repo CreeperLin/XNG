@@ -24,6 +24,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
     private XIRInstAddr curThisAddr = null;
 
     private XCFGNode curStaticInit;
+    private XCFGNode curFuncNode;
 
     private HashMap<String,Integer> stringLiteralMap = new HashMap<>();
 
@@ -54,6 +55,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         curClassName = null;
     }
     public void visitFuncDeclNode(XASTFuncDeclNode node){
+        curFuncNode = node.startNode;
         curFuncRetNode = cfg.addNode();
         out.println("Function:"+node.name);
         curFuncName = node.name;
@@ -92,6 +94,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         curFuncRetNode = null;
         curThisAddr = null;
         curFuncName = null;
+        curFuncNode = null;
     }
 
     private void genBoolVarNode(XIRInstAddr addr, XASTExprNode expr, XCFGNode endNode) {
@@ -518,6 +521,8 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 XIRInst call_inst = new XIRInst(type);
 //                call_inst.oprList.add(node.exprList.firstElement().instAddr);
                 call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.toNode));
+                node.toNode.isCallee = true;
+                curFuncNode.isCaller = true;
                 node.instList.add(call_inst);
                 XIRInst mv_inst = new XIRInst(XIRInst.opType.op_mov);
                 XIRInstAddr ret_addr = XIRInstAddr.newStackAddr(8);

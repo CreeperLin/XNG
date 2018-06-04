@@ -29,7 +29,7 @@ public class XIRInstAddr {
     static int stackCount = 1;
 
     public boolean equals(XIRInstAddr i) {
-        return i != null && this.type == i.type && this.lit1 == i.lit1 && this.lit2 == i.lit2;
+        return i != null && this.type == i.type && this.lit1 == i.lit1 && this.lit2 == i.lit2 && this.lit3 == i.lit3 && this.lit4==i.lit4;
     }
 
     public static XIRInstAddr newStaticAddr(String name, int size){
