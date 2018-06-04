@@ -58,6 +58,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
     public void visitFuncDeclNode(XASTFuncDeclNode node){
         curFuncNode = node.startNode;
         curFuncRetNode = cfg.addNode();
+        curFuncRetNode.addInst(XIRInst.opType.op_ret);
         out.println("Function:"+node.name);
         curFuncName = node.name;
         visitTypeNode(node.retType);
@@ -82,8 +83,8 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
         if (bodyEnd != null) {
             bodyEnd.linkTo(curFuncRetNode);
             System.out.println("Function:bodyEnd:"+node.name+":"+bodyEnd.nodeID);
-            if (bodyEnd.instList.isEmpty() || bodyEnd.instList.lastElement().op != XIRInst.opType.op_ret)
-                curFuncRetNode.addInst(XIRInst.opType.op_ret);
+//            if (bodyEnd.instList.isEmpty() || bodyEnd.instList.lastElement().op != XIRInst.opType.op_ret)
+//                curFuncRetNode.addInst(XIRInst.opType.op_ret);
         }
         node.endNode = curFuncRetNode;
         cfg.Proc.add(new XIRProcInfo(node.startNode,node.endNode));
@@ -215,10 +216,12 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                     if (SymbolType.boolType.equals(expr.type)
                             && (!(expr instanceof XASTPrimNode))) {
                         XCFGNode curNode = cfg.addNode();
-                        curNode.addInst(XIRInst.opType.op_ret);
+//                        curNode.addInst(XIRInst.opType.op_ret);
                         genBoolVarNode(XIRInstAddr.newRegAddr(-2),expr,curNode);
                         node.startNode = expr.startNode;
-                        node.endNode = curNode;
+                        curNode.linkTo(curFuncRetNode);
+//                        node.endNode = curNode;
+                        node.endNode = null;
                         return;
                     }
                     node.stmtList.forEach(this::visitStmt);
@@ -230,10 +233,11 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                     mv_inst.oprList.add(XIRInstAddr.newRegAddr(-2));
                     mv_inst.oprList.add(((XASTExprNode) node.stmtList.elementAt(0)).instAddr);
                 }
-                curNode.addInst(XIRInst.opType.op_ret);
-                node.startNode = node.endNode = curNode;
-//                curNode.linkTo(curFuncRetNode);
-//                node.endNode = null;
+//                curNode.addInst(XIRInst.opType.op_ret);
+                node.startNode = curNode;
+//                node.endNode = curNode;
+                curNode.linkTo(curFuncRetNode);
+                node.endNode = null;
                 break;
             }
             case s_plist:
