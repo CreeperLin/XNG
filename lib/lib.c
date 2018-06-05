@@ -4,6 +4,10 @@
 #include <malloc.h>
 #include <ctype.h>
 
+void _lib_printInt(long long num) {
+    printf("%d",num);
+}
+
 void _lib_print(const char* str) {
     fputs(str,stdout);
 }

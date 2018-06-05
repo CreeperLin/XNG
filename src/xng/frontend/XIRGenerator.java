@@ -501,6 +501,9 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                     node.instList.add(mv_inst);
                     return;
                 }
+//                else if (node.toNode.name.startsWith("_lib_print")){
+//
+//                }
                 type = XIRInst.opType.op_call;
                 int t = 0;
                 XIRInstAddr ptAddr = null;

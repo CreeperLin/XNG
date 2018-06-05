@@ -10,7 +10,7 @@ public class NASMGenerator {
     private Vector<NASMInst> instList = new Vector<>();
 
     private HashMap<Integer,NASMReg> regMap = new HashMap<>();
-    private int[] availReg = {17,12,13,14,15,8,9,18,22,23};
+    private int[] availReg = {17,12,13,14,15,8,9,18};
     private int[] paramReg = {23,22,19,18,8,9};
 
     private Stack<Integer> curSavedReg = new Stack<>();

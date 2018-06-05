@@ -1,3 +1,4 @@
+global _lib_printInt
 global _lib_print
 global _lib_println
 global _lib_getString
@@ -22,7 +23,15 @@ extern malloc
 extern puts
 extern fputs
 extern stdout
+extern printf
 SECTION .text
+_lib_printInt:
+        mov     rsi, rdi
+        xor     eax, eax
+        mov     edi, L_020
+        jmp     printf
+        nop
+ALIGN   16
 _lib_print:
         mov     rsi, qword [rel stdout]
         jmp     fputs
@@ -35,7 +44,7 @@ _lib_getString:
         push    rbx
         mov     edi, 256
         call    malloc
-        mov     edi, L_020
+        mov     edi, L_021
         mov     rbx, rax
         mov     rsi, rax
         xor     eax, eax
@@ -46,7 +55,7 @@ _lib_getString:
 ALIGN   16
 _lib_getInt:
         sub     rsp, 24
-        mov     edi, L_021
+        mov     edi, L_020
         xor     eax, eax
         lea     rsi, [rsp+0CH]
         mov     dword [rsp+0CH], 0
@@ -65,7 +74,7 @@ _lib_toString:
         mov     rdx, rbp
         mov     rbx, rax
         mov     rdi, rax
-        mov     esi, L_021
+        mov     esi, L_020
         xor     eax, eax
         call    sprintf
         add     rsp, 8
@@ -396,9 +405,8 @@ L_019:
         ret
 SECTION .data   
 SECTION .bss    
-SECTION .text
 SECTION .rodata.str1.1 
 L_020:
-        db 25H, 73H, 00H
-L_021:
         db 25H, 64H, 00H
+L_021:
+        db 25H, 73H, 00H
