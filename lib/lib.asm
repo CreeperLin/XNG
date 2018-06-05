@@ -1,3 +1,4 @@
+global _lib_newline
 global _lib_printInt
 global _lib_print
 global _lib_println
@@ -22,9 +23,15 @@ extern __isoc99_scanf
 extern malloc
 extern puts
 extern fputs
-extern stdout
 extern printf
+extern _IO_putc
+extern stdout
 SECTION .text
+_lib_newline:
+        mov     rsi, qword [rel stdout]
+        mov     edi, 10
+        jmp     _IO_putc
+ALIGN   16
 _lib_printInt:
         mov     rsi, rdi
         xor     eax, eax
@@ -405,6 +412,7 @@ L_019:
         ret
 SECTION .data   
 SECTION .bss    
+SECTION .text
 SECTION .rodata.str1.1 
 L_020:
         db 25H, 64H, 00H

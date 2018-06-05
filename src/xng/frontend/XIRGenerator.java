@@ -4,9 +4,7 @@ import xng.XIR.*;
 import xng.frontend.AST.*;
 import xng.frontend.Symbol.SymbolType;
 
-import java.util.HashMap;
-import java.util.Stack;
-import java.util.Vector;
+import java.util.*;
 
 import static java.lang.System.out;
 
@@ -491,6 +489,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 type = XIRInst.opType.op_xor;
                 break;
             case e_call: {
+                type = XIRInst.opType.op_call;
                 visitExpr(node.exprList.get(0));
                 node.instList.addAll(node.exprList.get(0).instList);
                 if (node.toNode.name.startsWith("_lib_array")) {
@@ -501,45 +500,87 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                     node.instList.add(mv_inst);
                     return;
                 }
-//                else if (node.toNode.name.startsWith("_lib_print")){
-//
-//                }
-                type = XIRInst.opType.op_call;
+                else if (node.toNode.name.startsWith("_lib_print")){
+                    boolean isLine = node.toNode.name.equals("_lib_println");
+                    Stack<XASTExprNode> exprStack = new Stack<>();
+                    XASTExprNode param = node.exprList.get(1).exprList.get(0);
+                    visitExpr(param);
+                    exprStack.push(node.exprList.get(1).exprList.get(0));
+                    while (!exprStack.isEmpty()) {
+                        XASTExprNode expr = exprStack.pop();
+                        if (expr.nodeID == XASTNodeID.e_call && expr.toNode.name.equals("_lib_toString")) {
+                            XASTExprNode p = expr.exprList.get(1).exprList.get(0);
+                            node.instList.addAll(p.instList);
+                            XIRInst param_inst = new XIRInst(XIRInst.opType.op_wpara);
+                            param_inst.oprList.add(p.instAddr);
+                            param_inst.oprList.add(XIRInstAddr.newImmAddr(0,0));
+                            node.instList.add(param_inst);
+                            XIRInst call_inst = new XIRInst(type);
+                            call_inst.oprList.add(XIRInstAddr.newJumpAddr("_lib_printInt"));
+                            node.instList.add(call_inst);
+                        } else if (expr.nodeID == XASTNodeID.e_add) {
+                            Vector<XASTExprNode> exprList = expr.exprList;
+                            for (int i = exprList.size() - 1; i >= 0; i--) {
+                                XASTExprNode xastExprNode = exprList.get(i);
+                                exprStack.push(xastExprNode);
+                            }
+                        } else {
+                            node.instList.addAll(expr.instList);
+                            XIRInst param_inst = new XIRInst(XIRInst.opType.op_wpara);
+                            param_inst.oprList.add(expr.instAddr);
+                            param_inst.oprList.add(XIRInstAddr.newImmAddr(0,0));
+                            node.instList.add(param_inst);
+                            XIRInst call_inst = new XIRInst(type);
+                            if (isLine&&exprStack.empty()) {
+                                call_inst.oprList.add(XIRInstAddr.newJumpAddr("_lib_println"));
+                                isLine = false;
+                            } else {
+                                call_inst.oprList.add(XIRInstAddr.newJumpAddr("_lib_print"));
+                            }
+                            node.instList.add(call_inst);
+                        }
+                    }
+                    if (isLine) {
+                        XIRInst call_inst = new XIRInst(type);
+                        call_inst.oprList.add(XIRInstAddr.newJumpAddr("_lib_newline"));
+                        node.instList.add(call_inst);
+                    }
+                    return;
+                }
                 int t = 0;
                 XIRInstAddr ptAddr = null;
                 if (node.toNode.name.startsWith("_class")) {
                     t = 1;
-                    ptAddr = (curThisAddr == null || node.exprList.get(0).nodeID==XASTNodeID.e_mem) ? node.exprList.get(0).exprList.get(0).instAddr : curThisAddr;
+                    ptAddr = (curThisAddr == null || node.exprList.get(0).nodeID == XASTNodeID.e_mem) ? node.exprList.get(0).exprList.get(0).instAddr : curThisAddr;
                 } else if (node.toNode.name.startsWith("_lib_str")) {
                     t = 1;
                     ptAddr = node.exprList.get(0).exprList.get(0).instAddr;
                 }
-                if (node.exprList.size()>1){
+                if (node.exprList.size() > 1) {
                     Vector<XASTExprNode> exprList = node.exprList.elementAt(1).exprList;
                     for (XASTExprNode xastExprNode : exprList) {
                         visitExpr(xastExprNode);
                         node.instList.addAll(xastExprNode.instList);
                     }
-                    for (int i1 = exprList.size()-1; i1 >= 0; --i1) {
+                    for (int i1 = exprList.size() - 1; i1 >= 0; --i1) {
                         XASTExprNode i = exprList.get(i1);
 //                        visitExpr(i);
                         XIRInst param_inst = new XIRInst(XIRInst.opType.op_wpara);
                         param_inst.oprList.add(i.instAddr);
-                        param_inst.oprList.add(XIRInstAddr.newImmAddr(i1+t,0));
+                        param_inst.oprList.add(XIRInstAddr.newImmAddr(i1 + t, 0));
                         node.instList.add(param_inst);
                     }
                 }
                 if (t == 1) {
                     XIRInst param_inst = new XIRInst(XIRInst.opType.op_wpara);
                     param_inst.oprList.add(ptAddr);
-                    param_inst.oprList.add(XIRInstAddr.newImmAddr(0,0));
+                    param_inst.oprList.add(XIRInstAddr.newImmAddr(0, 0));
                     node.instList.add(param_inst);
                 }
-                XIRInst call_inst = new XIRInst(type);
-//                call_inst.oprList.add(node.exprList.firstElement().instAddr);
-                call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.toNode));
 //                node.toNode.isCallee = true;
 //                curFuncNode.isCaller = true;
+                XIRInst call_inst = new XIRInst(type);
+                call_inst.oprList.add(XIRInstAddr.newJumpAddr(node.toNode));
                 node.instList.add(call_inst);
                 XIRInst mv_inst = new XIRInst(XIRInst.opType.op_mov);
                 XIRInstAddr ret_addr = XIRInstAddr.newRegAddr();
