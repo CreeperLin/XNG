@@ -1,5 +1,7 @@
 package xng.XIR;
 
+import xng.opt.InstInfo;
+
 import java.util.Vector;
 
 public class XIRInst {
@@ -27,6 +29,7 @@ public class XIRInst {
 
     public opType op;
     public Vector<XIRInstAddr> oprList;
+    public InstInfo info;
 
     public static boolean isOpCommute(opType _op) {
         switch (_op){

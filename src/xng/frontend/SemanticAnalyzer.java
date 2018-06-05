@@ -377,7 +377,7 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                 visitExpr(node.exprList.elementAt(0));
                 if (node.exprList.elementAt(0).type.arrayDim > 0) {
                     out.println("dbg:array mem");
-//                    curMemName.append("_array.");
+                    curMemName.append("array.");
                 } else if (node.exprList.elementAt(0).type != null && assertExprType(node.exprList.elementAt(0), SymbolType.typType.CLASS)) {
                     curMemName.append(node.exprList.elementAt(0).type.className).append('.');
                 } else if (assertExprType(node.exprList.elementAt(0),SymbolType.strType)) {

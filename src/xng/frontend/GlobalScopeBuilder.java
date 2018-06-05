@@ -34,7 +34,7 @@ public class GlobalScopeBuilder extends XASTBaseVisitor implements XASTVisitor {
 //        SST.regSymbol("_new",new SymbolType(new Vector<>(plist)),0, node);
 //        plist.clear();
         plist.add(SymbolType.intType);
-        SST.regSymbol("size",new SymbolType(new Vector<>(plist)),"_lib_",null, node);
+        SST.regSymbol("array.size",new SymbolType(new Vector<>(plist)),"_lib_",null, node);
         plist.clear();
         plist.add(SymbolType.voidType);
         plist.add(SymbolType.strType);

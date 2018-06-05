@@ -117,7 +117,7 @@ long long* _lib_alloc(long long rem, long long *dims) {
     *arr = dim;
     if (rem==1) return arr;
     for (int i = 1;i<=dim;++i) {
-        *(arr + i) = (long long)_lib_alloc(rem-1,dims+1);
+        *(arr + i) = (long long)_lib_alloc(rem-1,dims-1);
     }
     return arr;
 }

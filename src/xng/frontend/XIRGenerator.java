@@ -309,6 +309,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 break;
             }
             case s_none:
+                node.startNode = node.endNode = cfg.addNode();
                 break;
             default:
         }
@@ -323,6 +324,15 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             return;
         }
         switch (node.nodeID) {
+            case p_lit_bool: {
+                XCFGNode n = node.startNode = node.endNode = cfg.addNode();
+                if (((XASTPrimNode)node).intLiteral == 1) {
+                    n.linkTo(trueNode);
+                } else {
+                    n.linkTo(falseNode);
+                }
+                return;
+            }
             case e_land: {
                 visitLogicalExprNode(node.exprList.get(1), trueNode, falseNode);
                 visitLogicalExprNode(node.exprList.get(0), node.exprList.get(1).startNode, falseNode);
@@ -483,7 +493,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
             case e_call: {
                 visitExpr(node.exprList.get(0));
                 node.instList.addAll(node.exprList.get(0).instList);
-                if (node.toNode.name.equals("_lib_size")) {
+                if (node.toNode.name.startsWith("_lib_array")) {
                     XIRInst mv_inst = new XIRInst(XIRInst.opType.op_mov);
                     node.instAddr = XIRInstAddr.newRegAddr();
                     mv_inst.oprList.add(node.instAddr);

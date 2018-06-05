@@ -58,7 +58,6 @@ public class VarAnalyzer {
                 ++inf3.readCount;
                 break;
             case op_ret:
-                ++inf1.readCount;
                 break;
             case op_not:
             case op_neg:

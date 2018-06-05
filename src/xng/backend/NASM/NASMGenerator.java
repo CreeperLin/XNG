@@ -10,7 +10,7 @@ public class NASMGenerator {
     private Vector<NASMInst> instList = new Vector<>();
 
     private HashMap<Integer,NASMReg> regMap = new HashMap<>();
-    private int[] availReg = {17,12,13,14,15,8,9,18,19,22,23};
+    private int[] availReg = {17,12,13,14,15,8,9,18,22,23};
     private int[] paramReg = {23,22,19,18,8,9};
 
     private Stack<Integer> curSavedReg = new Stack<>();
@@ -511,6 +511,20 @@ public class NASMGenerator {
                 emitNASMInst(new NASMInst(NASMOp.opType.POP, new NASMRegAddr(new NASMReg(21,NASMWordType.QWORD)), null));
                 emitNASMInst(new NASMInst(getNASMOp(op), a1, a2));
                 break;
+            }
+            case op_shl: {
+                if (opr2.type != XIRInstAddr.addrType.a_imm){
+                    emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(18,NASMWordType.QWORD)),a2);
+                    emitNASMInst(NASMOp.opType.SAL,a1,new NASMRegAddr(new NASMReg(18,NASMWordType.BYTE)));
+                } else emitNASMInst(new NASMInst(getNASMOp(op),a1,a2));
+                return;
+            }
+            case op_shr: {
+                if (opr2.type != XIRInstAddr.addrType.a_imm){
+                    emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(18,NASMWordType.QWORD)),a2);
+                    emitNASMInst(NASMOp.opType.SAR,a1,new NASMRegAddr(new NASMReg(18,NASMWordType.BYTE)));
+                } else emitNASMInst(new NASMInst(getNASMOp(op),a1,a2));
+                return;
             }
             default:
                 emitNASMInst(new NASMInst(getNASMOp(op),a1,a2));

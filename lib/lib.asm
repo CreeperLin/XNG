@@ -178,13 +178,13 @@ _lib_alloc:
         test    rbx, rbx
         jle     L_019
         lea     r15, [r15-9H]
-        lea     r13, [r14+48H]
+        lea     r13, [r14-48H]
         mov     qword [rsp+0A0H], 0
         mov     rax, r15
         mov     r15, r13
         mov     r13, rax
 L_001:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+8H]
+        mov     rax, qword [rax-8H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+58H], rax
@@ -198,7 +198,7 @@ L_001:  mov     rax, qword [rsp+20H]
         jle     L_018
         mov     qword [rsp+0A8H], 0
 L_002:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+10H]
+        mov     rax, qword [rax-10H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+50H], rax
@@ -212,7 +212,7 @@ L_002:  mov     rax, qword [rsp+20H]
         jle     L_017
         mov     qword [rsp+0B0H], 0
 L_003:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+18H]
+        mov     rax, qword [rax-18H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+70H], rax
@@ -226,7 +226,7 @@ L_003:  mov     rax, qword [rsp+20H]
         jle     L_016
         mov     qword [rsp+0B8H], 0
 L_004:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+20H]
+        mov     rax, qword [rax-20H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+80H], rax
@@ -240,7 +240,7 @@ L_004:  mov     rax, qword [rsp+20H]
         jle     L_015
         mov     qword [rsp+0C0H], 0
 L_005:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+28H]
+        mov     rax, qword [rax-28H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+90H], rax
@@ -255,7 +255,7 @@ L_005:  mov     rax, qword [rsp+20H]
         mov     qword [rsp+48H], 0
         mov     r14, r15
 L_006:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+30H]
+        mov     rax, qword [rax-30H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+30H], rax
@@ -270,7 +270,7 @@ L_006:  mov     rax, qword [rsp+20H]
         mov     qword [rsp+28H], 0
 ALIGN   8
 L_007:  mov     rax, qword [rsp+20H]
-        mov     rax, qword [rax+38H]
+        mov     rax, qword [rax-38H]
         lea     rdi, [rax*8+8H]
         mov     rbx, rax
         mov     qword [rsp+10H], rax
@@ -285,7 +285,7 @@ L_007:  mov     rax, qword [rsp+20H]
         xor     r12d, r12d
 ALIGN   8
 L_008:  mov     rax, qword [rsp+20H]
-        mov     rbx, qword [rax+40H]
+        mov     rbx, qword [rax-40H]
         lea     rdi, [rbx*8+8H]
         call    malloc
         cmp     qword [rsp+18H], 9
@@ -394,6 +394,9 @@ L_019:
         pop     r14
         pop     r15
         ret
+SECTION .data   
+SECTION .bss    
+SECTION .text
 SECTION .rodata.str1.1 
 L_020:
         db 25H, 73H, 00H

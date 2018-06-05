@@ -7,6 +7,7 @@ public class NASMReg{
         R8,R9,R10,R11,R12,R13,R14,R15,RAX,RBX,RCX,RDX,RSP,RBP,RSI,RDI,RIP,
         R8D,R9D,R10D,R11D,R12D,R13D,R14D,R15D,EAX,EBX,ECX,EDX,EBP,ESI,EDI,ESP,EIP,
         R8W,R9W,R10W,R11W,R12W,R13W,R14W,R15W,AX,BX,CX,DX,BP,SI,DI,SP,
+        AL,BL,CL,DL,AH,BH,CH,DH
     }
 
     int regId;
@@ -71,12 +72,28 @@ public class NASMReg{
 
     private NASMReg.regType getSpecReg() {
         switch (wt) {
+            case BYTE:
+                return getByteReg(regId);
             case WORD:
                 return getWORDReg(regId);
             case DWORD:
                 return getDWORDReg(regId);
             case QWORD:
                 return getQWORDReg(regId);
+        }
+        return regType.NONE;
+    }
+
+    private static regType getByteReg(int regID){
+        switch (regID) {
+            case 16:
+                return regType.AL;
+            case 17:
+                return regType.BL;
+            case 18:
+                return regType.CL;
+            case 19:
+                return regType.DL;
         }
         return regType.NONE;
     }
