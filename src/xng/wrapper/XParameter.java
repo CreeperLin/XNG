@@ -33,6 +33,8 @@ public class XParameter {
                             isEnableOptimization = false;
                             break;
                         case '1':
+                        case '2':
+                            isEnableOptimization = true;
                             break;
                         default:
                             throw new XException(XException.exType.param_error,"invalid parameter");
