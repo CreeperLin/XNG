@@ -30,6 +30,17 @@ public class XIRInstAddr {
     private static int regCount = 1;
     private static int stackCount = 1;
 
+    public void copy(XIRInstAddr i) {
+        if (i==null) return;
+        type = i.type;
+        lit1 = i.lit1;
+        lit2 = i.lit2;
+        lit3 = i.lit3;
+        lit4 = i.lit4;
+        addr1 = i.addr1;
+        addr2 = i.addr2;
+    }
+
     public boolean equals(XIRInstAddr i) {
         if (i == null || this.type != i.type) return false;
         switch (type){

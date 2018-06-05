@@ -76,7 +76,7 @@ public class ScopedSymbolTable {
                     } else sym.startNode.name = "_lib_"+name;
                 }
                 else sym.startNode.name = "_class_"+name;
-                sym.reg = XIRInstAddr.newRegAddr();
+//                sym.reg = XIRInstAddr.newRegAddr();
             }
         } else if (node instanceof XASTVarDeclNode) {
             if (curFuncName != null) {
@@ -84,9 +84,10 @@ public class ScopedSymbolTable {
 //                if ((funcSym=findSymbol(curFuncName))==null){
 //                    ce.add(XCompileError.ceType.ce_nodecl,curClassName,node);
 //                } else
-                if (type.declType == SymbolType.typType.CLASS){
-                    ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(8);
-                } else ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newStackAddr(type.getMemSize());
+//                if (type.declType == SymbolType.typType.CLASS){
+//                    ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newRegAddr();
+//                } else ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newRegAddr();
+                ((XASTVarDeclNode) node).reg = sym.reg = XIRInstAddr.newRegAddr();
             } else if (curClassName != null){
                 SymbolID classSym;
                 if ((classSym=findSymbol(curClassName))==null){

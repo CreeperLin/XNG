@@ -46,6 +46,12 @@ public class XIRInst {
         }
     }
 
+    public void copy(XIRInst inst) {
+        op = inst.op;
+        oprList = inst.oprList;
+        info = inst.info;
+    }
+
     public XIRInst(opType _op){
         op = _op;
         oprList = new Vector<>();
@@ -54,6 +60,13 @@ public class XIRInst {
     public XIRInst(opType _op, Vector<XIRInstAddr> _opr){
         op = _op;
         oprList = _opr;
+    }
+
+    public XIRInst(opType _op, XIRInstAddr opr1, XIRInstAddr opr2){
+        op = _op;
+        oprList = new Vector<>();
+        oprList.add(opr1);
+        oprList.add(opr2);
     }
 
     @Override

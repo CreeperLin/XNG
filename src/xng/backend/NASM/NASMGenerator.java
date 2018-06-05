@@ -180,13 +180,13 @@ public class NASMGenerator {
         }
         if (regMap.containsKey(num)) {
             NASMReg reg = regMap.get(num);
-            if (reg.wt != wt) {
-                NASMReg nr = new NASMReg(16,reg.wt);
-                emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(nr),new NASMRegAddr(reg));
-                emitNASMInst(NASMOp.opType.CDQE,null,null);
-                reg = nr;
-                reg.wt = NASMWordType.QWORD;
-            }
+//            if (reg.wt != wt) {
+//                NASMReg nr = new NASMReg(16,reg.wt);
+//                emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(nr),new NASMRegAddr(reg));
+//                emitNASMInst(NASMOp.opType.CDQE,null,null);
+//                reg = nr;
+//                reg.wt = NASMWordType.QWORD;
+//            }
             return reg;
         }
         NASMReg reg = new NASMReg(getAvailReg(),wt);
@@ -445,6 +445,13 @@ public class NASMGenerator {
                             emitNASMInst(XIRInst.opType.op_shl,opr1,XIRInstAddr.newImmAddr(i,0));
                         }
                     }
+                }
+                if (opr1.type != XIRInstAddr.addrType.a_reg) {
+                    XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
+                    emitNASMInst(XIRInst.opType.op_mov,tmp_addr,opr1);
+                    emitNASMInst(XIRInst.opType.op_mult,tmp_addr,opr2);
+                    emitNASMInst(XIRInst.opType.op_mov,opr1,tmp_addr);
+                    return;
                 }
                 break;
             }

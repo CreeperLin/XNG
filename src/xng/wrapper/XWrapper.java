@@ -11,6 +11,7 @@ import xng.antlr.XNGVisitor;
 import xng.backend.ASMGenerator;
 import xng.backend.NASM.NASMGenerator;
 import xng.backend.StackAllocator;
+import xng.backend.TestRegAllocator;
 import xng.common.XCompileError;
 import xng.common.XException;
 import xng.frontend.AST.XASTCUNode;
@@ -101,10 +102,10 @@ public class XWrapper {
         if (!XParameter.isEnableIR) return;
 
         new XIRGenerator(cfg).visitCUNode(prog);
-        cfg.print();
+//        cfg.print();
 
         new XCFGReduce(cfg);
-//        cfg.print();
+        cfg.print();
 
         if (XParameter.isEnableOptimization) {
             out.println("opt");
@@ -113,6 +114,7 @@ public class XWrapper {
 
         if (!XParameter.isEnableAssembly) return;
 
+        new TestRegAllocator(cfg);
         new StackAllocator(cfg);
         cfg.print();
 
