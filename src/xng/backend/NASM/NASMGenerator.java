@@ -11,7 +11,7 @@ public class NASMGenerator {
 
 //    private HashMap<Integer,NASMReg> regMap = new HashMap<>();
     private int[] availReg = {17,12,13,14,15};
-    private int[] tempReg = {23,22};
+    private int[] tempReg = {10,11};
     private int[] tempMap = {0,0};
     private int[] paramReg = {23,22,19,18,8,9};
 
@@ -382,13 +382,15 @@ public class NASMGenerator {
         if (op == XIRInst.opType.op_mov && Objects.equals(a1, a2)) return;
         switch (op){
             case op_wpara:
-//                if (!isWParam) {
-//                    isWParam = true;
+                if (!isWParam) {
+                    isWParam = true;
 //                    for (int t: availReg) {
 //                        curCallerSavedReg.push(t);
 //                    }
+//                    curCallerSavedReg.push(10);
+//                    curCallerSavedReg.push(11);
 //                    pushCallerSavedReg();
-//                }
+                }
                 if (opr2.lit1 < 6){
                     emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(paramReg[opr2.lit1],NASMWordType.QWORD)),a1);
                 } else {

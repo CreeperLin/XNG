@@ -46,6 +46,10 @@ public class GlobalRegAllocator {
 
     private void visitInfGraph() {
         Stack<Integer> delNodes = new Stack<>();
+//        PriorityQueue<Map.Entry<Integer, RegInfo>> delQueue = new PriorityQueue<>(Comparator.comparing((i,j)->{
+//            i.getValue()
+//        }));
+
         boolean isEmpty = false;
         boolean del = false;
         int chr = curChrom;

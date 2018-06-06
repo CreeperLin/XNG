@@ -182,6 +182,7 @@ public class NASMAdapter {
                             return;
                         } else {
                             visitXIRInst(list,XIRInst.opType.op_shl,opr1,XIRInstAddr.newImmAddr(i,0));
+                            return;
                         }
                     }
                 }

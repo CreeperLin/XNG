@@ -493,7 +493,7 @@ public class XIRGenerator extends XASTBaseVisitor implements XASTVisitor {
                 type = XIRInst.opType.op_and;
                 break;
             case e_bneg:
-                type = XIRInst.opType.op_neg;
+                type = XIRInst.opType.op_not;
                 break;
             case e_bor:
                 type = XIRInst.opType.op_or;
