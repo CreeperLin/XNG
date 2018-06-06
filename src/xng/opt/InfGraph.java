@@ -58,7 +58,7 @@ public class InfGraph {
         if(map.containsKey(t)) {
             return map.get(t);
         }
-        RegInfo i = new RegInfo();
+        RegInfo i = new RegInfo(t);
         map.put(t,i);
         return i;
     }

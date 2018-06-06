@@ -4,6 +4,7 @@ import xng.opt.VarAnalyzer;
 import xng.opt.VarInfo;
 
 import java.util.Objects;
+import java.util.Vector;
 
 public class XIRInstAddr {
     public enum addrType{
@@ -29,6 +30,7 @@ public class XIRInstAddr {
 
     private static int regCount = 1;
     private static int stackCount = 1;
+    public static Vector<XIRInstAddr> regList = new Vector<>();
 
     public void copy(XIRInstAddr i) {
         if (i==null) return;
@@ -74,12 +76,16 @@ public class XIRInstAddr {
 
     public static XIRInstAddr newRegAddr(){
         System.out.println("XIRInstAddr:new reg:"+regCount);
-        return new XIRInstAddr(addrType.a_reg,regCount++,0,0,0);
+        XIRInstAddr a = new XIRInstAddr(addrType.a_reg,regCount++,0,0,0);
+        regList.add(a);
+        return a;
     }
 
     public static XIRInstAddr newRegAddr(int id){
         System.out.println("XIRInstAddr:new reg:"+id);
-        return new XIRInstAddr(addrType.a_reg,id,0,0,0);
+        XIRInstAddr a = new XIRInstAddr(addrType.a_reg,id,0,0,0);
+//        regList.add(a);
+        return a;
     }
 
     public static XIRInstAddr newStackAddr(int size){

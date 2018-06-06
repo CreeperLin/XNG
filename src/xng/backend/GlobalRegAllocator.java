@@ -11,8 +11,7 @@ public class GlobalRegAllocator {
     private HashSet<Integer> visitFlag = new HashSet<>();
     private InfGraph inf;
     private int maxColor = 5;
-    private int curChrom = 4;
-//    private int curColor = 1;
+    private static int curChrom = 4;
     HashSet<Integer> colorSet = new HashSet<>();
 
     public GlobalRegAllocator(XCFG _cfg){
@@ -23,10 +22,15 @@ public class GlobalRegAllocator {
         visitXCFG();
     }
 
-//    private int getNextColor() {
-//        if (curColor>curChrom) curColor = 1;
-//        return curColor++;
-//    }
+    class RegInfoPair {
+        public int reg;
+        public RegInfo info;
+
+        public RegInfoPair(int _t, RegInfo _r) {
+            reg = _t;
+            info = _r;
+        }
+    }
 
     private boolean colorNode(int n) {
         RegInfo r = inf.getNode(n);
@@ -44,42 +48,36 @@ public class GlobalRegAllocator {
         return true;
     }
 
+    private static float spillMetric(RegInfo info) {
+//        System.out.println("spill:"+info.varInfo+' '+info.getDeg());
+        return (float)(25+info.varInfo.getRefCount()) / info.getDeg();
+    }
+
+    private static Comparator<RegInfoPair> regComparator = new Comparator<RegInfoPair>() {
+        @Override
+        public int compare(RegInfoPair regInfoPair, RegInfoPair t1) {
+            float t = (spillMetric(t1.info) - spillMetric(regInfoPair.info));
+            if (t<0) return -1;
+            if (t>0) return 1;
+            return 0;
+        }
+    };
+
     private void visitInfGraph() {
         Stack<Integer> delNodes = new Stack<>();
-//        PriorityQueue<Map.Entry<Integer, RegInfo>> delQueue = new PriorityQueue<>(Comparator.comparing((i,j)->{
-//            i.getValue()
-//        }));
-
-        boolean isEmpty = false;
-        boolean del = false;
-        int chr = curChrom;
-        while (!isEmpty) {
-            isEmpty = true;
-            for (Map.Entry<Integer, RegInfo> entry : inf.map.entrySet()) {
-                int n = entry.getKey();
-                RegInfo r = entry.getValue();
-                if (r.enabled) {
-                    int deg = r.getDeg();
-                    if (deg>chr) {
-                        System.out.println("push:"+n+' '+deg);
-                        delNodes.push(n);
-                        del = true;
-                        r.enabled = false;
-                    } else isEmpty = false;
-                }
-            }
-            if (!del) {
-                --chr;
-            }
-            del = false;
+        PriorityQueue<RegInfoPair> delQueue = new PriorityQueue<>(regComparator);
+        for (Map.Entry<Integer, RegInfo> entry : inf.map.entrySet()) {
+            int n = entry.getKey();
+            RegInfo r = entry.getValue();
+            delQueue.add(new RegInfoPair(n,r));
         }
-        while (!delNodes.empty()) {
-            int n = delNodes.pop();
-            inf.getNode(n).enabled = true;
-//            System.out.println("coloring:"+n);
-            if (!colorNode(n)) {
-                System.out.println("color failed:"+n);
-
+        while (!delQueue.isEmpty()) {
+            RegInfoPair pair = delQueue.poll();
+            int reg = pair.reg;
+            System.out.println("queue:"+reg+' '+pair.info.getDeg()+' '+pair.info.varInfo+' '+spillMetric(pair.info));
+            inf.getNode(reg).enabled = true;
+            if (!colorNode(reg)) {
+                System.out.println("color failed:"+reg);
             }
         }
     }
