@@ -9,6 +9,8 @@ import xng.antlr.MxParser;
 import xng.antlr.XNGErrorListener;
 import xng.antlr.XNGVisitor;
 import xng.backend.ASMGenerator;
+import xng.backend.GlobalRegAllocator;
+import xng.backend.NASM.NASMAdapter;
 import xng.backend.NASM.NASMGenerator;
 import xng.backend.StackAllocator;
 import xng.backend.TestRegAllocator;
@@ -21,9 +23,7 @@ import xng.frontend.Symbol.ScopedSymbolTable;
 import xng.frontend.Symbol.SrcPos;
 import xng.frontend.XASTPrinter;
 import xng.frontend.XIRGenerator;
-import xng.opt.SSAConverter;
-import xng.opt.VarAnalyzer;
-import xng.opt.XCFGReduce;
+import xng.opt.*;
 
 import java.io.*;
 import java.util.Vector;
@@ -102,20 +102,26 @@ public class XWrapper {
         if (!XParameter.isEnableIR) return;
 
         new XIRGenerator(cfg).visitCUNode(prog);
-//        cfg.print();
 
         new XCFGReduce(cfg);
+//        cfg.print();
+        new NASMAdapter(cfg);
         cfg.print();
 
         if (XParameter.isEnableOptimization) {
             out.println("opt");
-//            new VarAnalyzer(cfg);
+            new PeepOptimizer(cfg);
+            new VarAnalyzer(cfg);
+            new DataFlowAnalyzer(cfg);
         }
+        cfg.print();
 
         if (!XParameter.isEnableAssembly) return;
 
-        new TestRegAllocator(cfg);
+//        new TestRegAllocator(cfg);
+        new GlobalRegAllocator(cfg);
         new StackAllocator(cfg);
+        new NASMAdapter(cfg);
         cfg.print();
 
         BufferedWriter bw;

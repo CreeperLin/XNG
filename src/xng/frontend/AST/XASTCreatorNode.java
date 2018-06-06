@@ -9,6 +9,7 @@ public class XASTCreatorNode extends XASTExprNode {
 
     public XASTTypeNode ctype;
     public boolean hasConstructor = false;
+    public int idim = 0;
 
     public XASTCreatorNode(SrcPos ctx, XASTTypeNode _t, XASTExprNode _n){
         super(ctx, XASTNodeID.e_creator, (_n == null) ? null : _n.exprList);

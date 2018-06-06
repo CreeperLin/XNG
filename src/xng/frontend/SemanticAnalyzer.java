@@ -465,6 +465,9 @@ public class SemanticAnalyzer extends XASTBaseVisitor implements XASTVisitor{
                     empty = true;
                 } else if (empty || !i.type.equals(SymbolType.intType)) {
                     ce.add(XCompileError.ceType.ce_type, "creator:idx:" + i.type, i);
+                    break;
+                } else {
+                    ++node.idim;
                 }
             }
             node.type = new SymbolType(node.ctype);

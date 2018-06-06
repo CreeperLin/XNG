@@ -10,7 +10,7 @@ public class StackAllocator {
     private XCFG cfg;
     private int curStackPt = 8;
     private HashSet<Integer> visitFlag = new HashSet<>();
-    private HashMap<Integer,Integer> basePtMap = new HashMap<>();
+//    private HashMap<Integer,Integer> basePtMap = new HashMap<>();
 //    private HashSet<XIRInstAddr> globalVar = new HashSet<>();
 
     public StackAllocator(XCFG _cfg){
@@ -39,23 +39,16 @@ public class StackAllocator {
         for (XIRInstAddr i : inst.oprList) {
             if (i.type == XIRInstAddr.addrType.a_stack) {
                 int t = i.lit2;
-                int id = i.lit4;
                 int base = curStackPt;
-                if (id!=0) {
-                    if (!basePtMap.containsKey(id)){
-                        basePtMap.put(id,base);
-                        curStackPt += t;
-                    } else base = basePtMap.get(id);
-                } else {
-                    curStackPt += t;
-//                    System.out.println("dbg:"+curStackPt);
-                }
-                System.out.println("StackAllocator:"+id+" "+base+" "+i.lit3);
+                curStackPt += t;
+                System.out.println("StackAllocator:"+base);
                 i.type = XIRInstAddr.addrType.a_mem;
                 i.lit1 = -1;
                 i.lit2 = 0;
-                i.lit4 = -base - i.lit3;
+                i.lit4 = -base;
                 i.lit3 = 0;
+                i.addr1 = null;
+                i.addr2 = null;
             }
         }
     }

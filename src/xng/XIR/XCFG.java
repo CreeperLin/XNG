@@ -23,9 +23,9 @@ public class XCFG {
         return n;
     }
 
-    public XCFGNode getNode(int id){
-        for (XCFGNode i : nodes) {
-            if (i.nodeID == id) {
+    public XIRProcInfo getProc(String name){
+        for (XIRProcInfo i: Proc) {
+            if (i.name.equals(name)) {
                 return i;
             }
         }

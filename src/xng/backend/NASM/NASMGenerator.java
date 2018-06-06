@@ -9,23 +9,24 @@ public class NASMGenerator {
 
     private Vector<NASMInst> instList = new Vector<>();
 
-    private HashMap<Integer,NASMReg> regMap = new HashMap<>();
-    private int[] availReg = {17,12,13,14,15,8,9,18};
+//    private HashMap<Integer,NASMReg> regMap = new HashMap<>();
+    private int[] availReg = {17,12,13,14,15};
+    private int[] tempReg = {23,22};
+    private int[] tempMap = {0,0};
     private int[] paramReg = {23,22,19,18,8,9};
 
-    private Stack<Integer> curSavedReg = new Stack<>();
+    private Stack<Integer> curCalleeSavedReg = new Stack<>();
+    private Stack<Integer> curCallerSavedReg = new Stack<>();
     private int[] calleeSavedReg = {17,12,13,14,15,21};
     private int[] callerSavedReg = {16,18,19,8,9,10,11,22,23};
 
     private int curAvailReg = 0;
+    private int curTempReg = 0;
     private int curStackOffset = 0;
     private int paramStackOffset = 0;
     private XIRProcInfo curProcInfo = null;
     private HashSet<Integer> visitFlag = new HashSet<>();
-    private XIRInstAddr lastDivOpr1;
-    private XIRInstAddr lastDivOpr2;
 //    private XCFGNode nextJumpNode = null;
-
     private XCFG cfg;
     private ASMGenerator asm;
 
@@ -49,16 +50,11 @@ public class NASMGenerator {
             curAvailReg = 0;
         }
         asm.emitLine();
-//        cfg.dataList.forEach(this::visitXIRData);
         asm.defSection(ASMGenerator.sectType.DATA);
         cfg.dataList.stream().filter(i -> i.dType != XIRData.dataType.d_res).forEach(this::visitXIRData);
         asm.emitLine();
         asm.defSection(ASMGenerator.sectType.BSS);
         cfg.dataList.stream().filter(i -> i.dType == XIRData.dataType.d_res).forEach(this::visitXIRData);
-    }
-
-    private boolean isExp2(int t){
-        return (t>0) && (t & (t-1)) == 0;
     }
 
     private void visitXIRData(XIRData data){
@@ -86,8 +82,8 @@ public class NASMGenerator {
     }
 
     private int getAvailReg() {
-        if (curAvailReg>=availReg.length) curAvailReg -= availReg.length;
-        return availReg[curAvailReg++];
+        if (++curAvailReg>=availReg.length) curAvailReg -= availReg.length;
+        return availReg[curAvailReg];
     }
 
     private int getExp2Sup(int t){
@@ -96,15 +92,28 @@ public class NASMGenerator {
         return r;
     }
 
-    private void pushSavedReg() {
-        for (int i:curSavedReg) {
+    private void pushCallerSavedReg() {
+        for (int i:curCallerSavedReg) {
             emitNASMInst(NASMOp.opType.PUSH,new NASMRegAddr(new NASMReg(i,NASMWordType.QWORD)),null);
         }
     }
 
-    private void popSavedReg() {
-        while (!curSavedReg.empty()) {
-            int t = curSavedReg.pop();
+    private void popCallerSavedReg() {
+        while (!curCallerSavedReg.empty()) {
+            int t = curCallerSavedReg.pop();
+            emitNASMInst(NASMOp.opType.POP,new NASMRegAddr(new NASMReg(t,NASMWordType.QWORD)),null);
+        }
+    }
+
+    private void pushCalleeSavedReg() {
+        for (int i:curCalleeSavedReg) {
+            emitNASMInst(NASMOp.opType.PUSH,new NASMRegAddr(new NASMReg(i,NASMWordType.QWORD)),null);
+        }
+    }
+
+    private void popCalleeSavedReg() {
+        while (!curCalleeSavedReg.empty()) {
+            int t = curCalleeSavedReg.pop();
             emitNASMInst(NASMOp.opType.POP,new NASMRegAddr(new NASMReg(t,NASMWordType.QWORD)),null);
         }
     }
@@ -123,21 +132,22 @@ public class NASMGenerator {
             }
         }
         if (curProcInfo != null) {
-            XIRInst pi = new XIRInst(XIRInst.opType.op_push);
-            pi.oprList.add(XIRInstAddr.newRegAddr(-1));
-            visitXIRInst(pi);
-            XIRInst mi = new XIRInst(XIRInst.opType.op_mov);
-            mi.oprList.add(XIRInstAddr.newRegAddr(-1));
-            mi.oprList.add(XIRInstAddr.newRegAddr(-3));
-            visitXIRInst(mi);
+            if (curProcInfo.isCallee && curProcInfo.paramCount<=6) {
+                for (int t : calleeSavedReg) {
+                    curCalleeSavedReg.add(t);
+                }
+            } else curCalleeSavedReg.add(21);
+//            curCalleeSavedReg.add(21);
+            pushCalleeSavedReg();
+//            emitNASMInst(NASMOp.opType.PUSH,new NASMRegAddr(new NASMReg(21,NASMWordType.QWORD)),null);
+            emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(21,NASMWordType.QWORD)),
+                    new NASMRegAddr(new NASMReg(20,NASMWordType.QWORD)));
             int stsz = curProcInfo.stackSize;
             curStackOffset = stsz > 8 ? Integer.max(getExp2Sup(stsz),32) : 0;
 //            curStackOffset = 32;
             if (curStackOffset != 0){
-                XIRInst si = new XIRInst(XIRInst.opType.op_sub);
-                si.oprList.add(XIRInstAddr.newRegAddr(-3));
-                si.oprList.add(XIRInstAddr.newImmAddr(curStackOffset, 0));
-                visitXIRInst(si);
+                emitNASMInst(NASMOp.opType.SUB,new NASMRegAddr(new NASMReg(20,NASMWordType.QWORD)),
+                        new NASMImmAddr(curStackOffset));
             }
             curProcInfo = null;
         }
@@ -158,17 +168,14 @@ public class NASMGenerator {
         }
     }
 
-    private NASMReg getNASMReg(int num, NASMWordType wt) {
+    private NASMReg getNASMReg(XIRInstAddr opr, NASMWordType wt) {
+        int num = opr.lit1;
         switch (num){
             case 0:
                 return null;
             case -1:
                 return new NASMReg(21,NASMWordType.QWORD);
             case -2: {
-//                if (curAvailReg>0) {
-//                    System.out.println("NASMGen:func return reg:"+curAvailReg);
-//                    return new NASMReg(availReg[curAvailReg++],wt);
-//                }
                 return new NASMReg(16,wt);
             }
             case -3:
@@ -177,9 +184,19 @@ public class NASMGenerator {
                 return new NASMReg(16,wt);
             case -5:
                 return new NASMReg(19,wt);
+            case -6:
+                return new NASMReg(availReg[opr.lit2],wt);
         }
-        if (regMap.containsKey(num)) {
-            NASMReg reg = regMap.get(num);
+        for (int i=0;i<tempMap.length;++i) {
+            if (tempMap[i]==num) {
+                return new NASMReg(tempReg[i],wt);
+            }
+        }
+        if (curTempReg==tempReg.length) curTempReg = 0;
+        tempMap[curTempReg] = num;
+        return new NASMReg(tempReg[curTempReg++],wt);
+//        if (regMap.containsKey(num)) {
+//            NASMReg reg = regMap.get(num);
 //            if (reg.wt != wt) {
 //                NASMReg nr = new NASMReg(16,reg.wt);
 //                emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(nr),new NASMRegAddr(reg));
@@ -187,11 +204,11 @@ public class NASMGenerator {
 //                reg = nr;
 //                reg.wt = NASMWordType.QWORD;
 //            }
-            return reg;
-        }
-        NASMReg reg = new NASMReg(getAvailReg(),wt);
-        regMap.put(num,reg);
-        return reg;
+//            return reg;
+//        }
+//        NASMReg reg = new NASMReg(getAvailReg(),wt);
+//        regMap.put(num,reg);
+//        return reg;
     }
 
     private NASMAddr getNASMAddr(XIRInstAddr opr, NASMWordType wt){
@@ -201,61 +218,33 @@ public class NASMGenerator {
                 return new NASMImmAddr(opr.lit1);
             }
             case a_reg:{
-                return new NASMRegAddr(getNASMReg(opr.lit1, wt));
+                return new NASMRegAddr(getNASMReg(opr, wt));
             }
             case a_mem:{
                 NASMReg base = null;
                 NASMReg offset = null;
                 int val = opr.lit4;
                 if (opr.addr1==null) {
-                    base = getNASMReg(opr.lit1,NASMWordType.QWORD);
-                    offset = getNASMReg(opr.lit2,NASMWordType.QWORD);
+                    base = new NASMReg(21,NASMWordType.QWORD);
+                    offset = null;
                 } else {
                     System.out.println("idx mem:"+opr.addr1+' '+opr.addr2);
                     switch (opr.addr1.type){
-                        case a_label:
-                        case a_stack:
-                            break;
                         case a_static: {
-//                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
-//                            emitNASMInst(XIRInst.opType.op_lea,tmp,opr.addr1);
-//                            base = getNASMReg(tmp.lit1,NASMWordType.QWORD);
                             base = new NASMReg(opr.addr1.str);
                             break;
                         }
-                        case a_mem:{
-                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
-                            emitNASMInst(XIRInst.opType.op_mov,tmp,opr.addr1);
-                            base = getNASMReg(tmp.lit1,NASMWordType.QWORD);
-                            break;
-                        }
                         case a_reg:
-                            base = getNASMReg(opr.addr1.lit1,NASMWordType.QWORD);
+                            base = getNASMReg(opr.addr1,NASMWordType.QWORD);
                             break;
                         case a_imm:
                             base = null;
                             val += opr.addr1.lit1;
                             break;
                     }
-                    if (opr.addr2 != null)
-                        switch (opr.addr2.type){
-                        case a_label:
-                        case a_stack:
-                            break;
-                        case a_static: {
-                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
-                            emitNASMInst(XIRInst.opType.op_mov,tmp,opr.addr2);
-                            offset = getNASMReg(tmp.lit1,NASMWordType.QWORD);
-                            break;
-                        }
-                        case a_mem: {
-                            XIRInstAddr tmp = XIRInstAddr.newRegAddr();
-                            emitNASMInst(XIRInst.opType.op_mov,tmp,opr.addr2);
-                            offset = getNASMReg(tmp.lit1,NASMWordType.QWORD);
-                            break;
-                        }
+                    switch (opr.addr2.type){
                         case a_reg:
-                            offset = getNASMReg(opr.addr2.lit1,NASMWordType.QWORD);
+                            offset = getNASMReg(opr.addr2,NASMWordType.QWORD);
                             break;
                         case a_imm:
                             offset = null;
@@ -266,16 +255,10 @@ public class NASMGenerator {
                 return new NASMMemAddr(wt,base,offset,opr.lit3, val);
             }
             case a_label:{
-//                if (nextJumpNode == null)
                 return new NASMLabelAddr(opr.str);
-//                String label = nextJumpNode.name;
-//                nextJumpNode = null;
-//                return new NASMLabelAddr(label);
-//                return new NASMLabelAddr(getLabel(cfg.getNode(opr.lit1)));
             }
             case a_static:{
                 return new NASMLabelAddr(opr.str);
-//                return new NASMMemAddr(wt,new NASMReg(opr.str),null,0,0);
             }
         }
         return null;
@@ -355,120 +338,34 @@ public class NASMGenerator {
     private void emitNASMInst(XIRInst.opType op, XIRInstAddr opr1, XIRInstAddr opr2) {
         System.out.println("NASMGen:emitXIRInst:"+op+' '+opr1+' '+opr2);
         switch (op) {
-            case op_div: {
-                if (opr2 == null) break;
-                if (opr2.isConst()){
-                    int t = opr2.getConst();
-                    if (t == 0) {
-                        System.out.println("NASMGen:error:div zero");
-                        return;
-                    }
-                    if (isExp2(t)){
-                        int i = 0;
-                        while ((t >> i)!=1) ++i;
-                        System.out.println("NASMGen:div:exp2 "+i);
-                        if (i!=0){
-                            emitNASMInst(XIRInst.opType.op_shr,opr1,XIRInstAddr.newImmAddr(i,0));
-                        }
-                        return;
-                    }
-                    XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-                    emitNASMInst(XIRInst.opType.op_mov,tmp_addr,opr2);
-                    opr2 = tmp_addr;
-                }
-//                if (lastDivOpr1 == opr1 && lastDivOpr2 == opr2) {
-//
-//                } else
-                    {
-                    emitNASMInst(XIRInst.opType.op_mov,XIRInstAddr.newRegAddr(-4),opr1);
-                    emitNASMInst(NASMOp.opType.CQO,null,null);
-                    emitNASMInst(XIRInst.opType.op_div,opr2,null);
-                }
-                emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newRegAddr(-4));
-                lastDivOpr1 = opr1;
-                lastDivOpr2 = opr2;
-                return;
-            }
-            case op_mod: {
-                if (opr2 == null) break;
-                if (opr2.isConst()){
-                    int t = opr2.getConst();
-                    if (t == 0) {
-                        System.out.println("NASMGen:error:mod zero");
-                        return;
-                    }
-                    if (isExp2(t)){
-                        int i = 0;
-                        while ((t >> i)!=1) ++i;
-                        System.out.println("NASMGen:mod:exp2 "+i);
-                        if (i==0){
-                            emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newImmAddr(0,0));
-                        } else {
-                            emitNASMInst(XIRInst.opType.op_and,opr1,XIRInstAddr.newImmAddr((1<<i)-1,0));
-                        }
-                        return;
-                    }
-                    XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-                    emitNASMInst(XIRInst.opType.op_mov,tmp_addr,opr2);
-                    opr2 = tmp_addr;
-                }
-//                if (lastDivOpr1 == opr1 && lastDivOpr2 == opr2) {
-//
-//                } else
-                    {
-                    emitNASMInst(XIRInst.opType.op_mov,XIRInstAddr.newRegAddr(-4),opr1);
-                    emitNASMInst(NASMOp.opType.CQO,null,null);
-                    emitNASMInst(XIRInst.opType.op_div,opr2,null);
-                }
-                emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newRegAddr(-5));
-                lastDivOpr1 = opr1;
-                lastDivOpr2 = opr2;
-                return;
-            }
-            case op_mult: {
-                if (opr2.isConst()){
-                    int t = opr2.getConst();
-                    if (t == 0) {
-                        emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newImmAddr(0,0));
-                        return;
-                    }
-                    if (isExp2(t)){
-                        int i = 0;
-                        while ((t >> i)!=1) ++i;
-                        System.out.println("NASMGen:mult:exp2 "+i);
-                        if (i<3){
-                            for (int j = 0;j < i;++j){
-                                emitNASMInst(XIRInst.opType.op_add,opr1,opr1);
-                            }
-                            return;
-                        } else {
-                            emitNASMInst(XIRInst.opType.op_shl,opr1,XIRInstAddr.newImmAddr(i,0));
-                        }
-                    }
-                }
-                if (opr1.type != XIRInstAddr.addrType.a_reg) {
-                    XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-                    emitNASMInst(XIRInst.opType.op_mov,tmp_addr,opr1);
-                    emitNASMInst(XIRInst.opType.op_mult,tmp_addr,opr2);
-                    emitNASMInst(XIRInst.opType.op_mov,opr1,tmp_addr);
+            case op_eq:
+            case op_ne:
+            case op_ge:
+            case op_gt:
+            case op_le:
+            case op_lt: {
+                if (opr1.type == XIRInstAddr.addrType.a_imm) {
+                    emitNASMInst(op,opr2,opr1);
                     return;
                 }
                 break;
             }
-            case op_not:
-            case op_neg: {
-                emitNASMInst(XIRInst.opType.op_mov,opr1,opr2);
-                opr2 = null;
-                break;
+            case op_div: {
+                if (opr2 == null) break;
+                emitNASMInst(XIRInst.opType.op_mov,XIRInstAddr.newRegAddr(-4),opr1);
+                emitNASMInst(NASMOp.opType.CQO,null,null);
+                emitNASMInst(XIRInst.opType.op_div,opr2,null);
+                emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newRegAddr(-4));
+                return;
             }
-        }
-        if (opr1 != null && opr2 != null
-                && (opr1.type == XIRInstAddr.addrType.a_mem || opr1.type == XIRInstAddr.addrType.a_static)
-                && (opr2.type == XIRInstAddr.addrType.a_mem || opr2.type == XIRInstAddr.addrType.a_static)) {
-            XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-            emitNASMInst(XIRInst.opType.op_mov, tmp_addr, opr2);
-            emitNASMInst(op,opr1,tmp_addr);
-            return;
+            case op_mod: {
+                if (opr2 == null) break;
+                emitNASMInst(XIRInst.opType.op_mov,XIRInstAddr.newRegAddr(-4),opr1);
+                emitNASMInst(NASMOp.opType.CQO,null,null);
+                emitNASMInst(XIRInst.opType.op_div,opr2,null);
+                emitNASMInst(XIRInst.opType.op_mov,opr1,XIRInstAddr.newRegAddr(-5));
+                return;
+            }
         }
         NASMWordType wt1, wt2;
         switch (op) {
@@ -485,17 +382,14 @@ public class NASMGenerator {
         if (op == XIRInst.opType.op_mov && Objects.equals(a1, a2)) return;
         switch (op){
             case op_wpara:
-                if (!isWParam) {
-                    isWParam = true;
-                    int t = Integer.min(opr2.lit1,6);
-                    for (int i=0;i<t;++i) {
-                        curSavedReg.push(paramReg[i]);
-                    }
-                    pushSavedReg();
-                }
+//                if (!isWParam) {
+//                    isWParam = true;
+//                    for (int t: availReg) {
+//                        curCallerSavedReg.push(t);
+//                    }
+//                    pushCallerSavedReg();
+//                }
                 if (opr2.lit1 < 6){
-//                    curSavedReg.push(paramReg[opr2.lit1]);
-//                    emitNASMInst(NASMOp.opType.PUSH,new NASMRegAddr(new NASMReg(paramReg[opr2.lit1],NASMWordType.QWORD)),null);
                     emitNASMInst(NASMOp.opType.MOV,new NASMRegAddr(new NASMReg(paramReg[opr2.lit1],NASMWordType.QWORD)),a1);
                 } else {
                     emitNASMInst(NASMOp.opType.PUSH,a1,null);
@@ -505,7 +399,9 @@ public class NASMGenerator {
             case op_rpara: {
                 int para_idx = opr2.lit1;
                 if (para_idx >= 6) {
-                    opr1.lit4 = 8+(para_idx-5)*8;
+                    if (opr1.type == XIRInstAddr.addrType.a_reg) {
+                        emitNASMInst(XIRInst.opType.op_mov,opr1,new XIRInstAddr(XIRInstAddr.addrType.a_mem,-1,0,0,8+(para_idx-5)*8));
+                    } else opr1.lit4 = 8+(para_idx-5)*8;
                 } else {
                     emitNASMInst(NASMOp.opType.MOV, a1, new NASMRegAddr(new NASMReg(paramReg[para_idx], NASMWordType.QWORD)));
                 }
@@ -515,7 +411,8 @@ public class NASMGenerator {
                 if (curStackOffset != 0) {
                     emitNASMInst(new NASMInst(NASMOp.opType.ADD, new NASMRegAddr(new NASMReg(20, NASMWordType.QWORD)), new NASMImmAddr(curStackOffset)));
                 }
-                emitNASMInst(new NASMInst(NASMOp.opType.POP, new NASMRegAddr(new NASMReg(21,NASMWordType.QWORD)), null));
+                popCalleeSavedReg();
+//                emitNASMInst(new NASMInst(NASMOp.opType.POP, new NASMRegAddr(new NASMReg(21,NASMWordType.QWORD)), null));
                 emitNASMInst(new NASMInst(getNASMOp(op), a1, a2));
                 break;
             }
@@ -540,7 +437,7 @@ public class NASMGenerator {
                         emitNASMInst(NASMOp.opType.ADD,new NASMRegAddr(new NASMReg(20,NASMWordType.QWORD)),new NASMImmAddr(paramStackOffset));
                         paramStackOffset = 0;
                     }
-                    popSavedReg();
+//                    popCallerSavedReg();
                     isWParam = false;
                 }
         }
@@ -548,32 +445,7 @@ public class NASMGenerator {
 
     private void visitXIRInst(XIRInst inst){
 //        System.out.println("DBGinst:"+inst);
-        if (inst.oprList.size()==3) {
-            XIRInstAddr opr1 = inst.oprList.get(0);
-            XIRInstAddr opr2 = inst.oprList.get(1);
-            XIRInstAddr opr3 = inst.oprList.get(2);
-            if (opr1.equals(opr2)) {
-                emitNASMInst(inst.op,opr1,opr3);
-            } else if (opr1.equals(opr3)){
-                if (XIRInst.isOpCommute(inst.op)){
-                    emitNASMInst(inst.op,opr1,opr2);
-                } else {
-                    XIRInstAddr tmp_addr = XIRInstAddr.newRegAddr();
-                    emitNASMInst(XIRInst.opType.op_mov,tmp_addr,opr2);
-                    emitNASMInst(inst.op,tmp_addr,opr3);
-                    emitNASMInst(XIRInst.opType.op_mov,opr1,tmp_addr);
-                }
-            } else {
-//                if (inst.op == XIRInst.opType.op_add
-//                        && opr2.type == XIRInstAddr.addrType.a_reg
-//                        && opr3.type == XIRInstAddr.addrType.a_reg) {
-//                    emitNASMInst(XIRInst.opType.op_lea,opr1,XIRInstAddr.newMemAddr(opr2,opr3,1,0));
-//                    return;
-//                }
-                emitNASMInst(XIRInst.opType.op_mov,opr1,opr2);
-                emitNASMInst(inst.op,opr1,opr3);
-            }
-        } else if (inst.oprList.size()==2) {
+        if (inst.oprList.size()==2) {
             XIRInstAddr opr1 = inst.oprList.get(0);
             XIRInstAddr opr2 = inst.oprList.get(1);
             emitNASMInst(inst.op,opr1,opr2);

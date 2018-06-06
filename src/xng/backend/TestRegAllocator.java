@@ -8,7 +8,6 @@ import java.util.Vector;
 
 public class TestRegAllocator {
     private XCFG cfg;
-    private int curStackPt = 8;
     private HashSet<Integer> visitFlag = new HashSet<>();
 
     public TestRegAllocator(XCFG _cfg){
@@ -36,7 +35,12 @@ public class TestRegAllocator {
         for (int i1 = 0; i1 < oprList.size(); i1++) {
             XIRInstAddr i = oprList.get(i1);
             if (i.type == XIRInstAddr.addrType.a_reg && i.lit1>0) {
-                i.copy(XIRInstAddr.newStackAddr(8));
+//                if (i.info.getRefCount()<=2) {
+//                    i.copy(XIRInstAddr.newRegAddr(-6));
+//                } else
+                    {
+                    i.copy(XIRInstAddr.newStackAddr(8));
+                }
             }
         }
     }

@@ -36,7 +36,7 @@ public class XCFGNode {
         assert _n != null;
         for (XCFGNode i: nextNode){
             if (i.nodeID==_n.nodeID) {
-                System.out.println("XCFGNode:error:duplicate link "+nodeID+"->"+_n.nodeID);
+//                System.out.println("XCFGNode:error:duplicate link "+nodeID+"->"+_n.nodeID);
                 return;
             }
         }
@@ -49,7 +49,7 @@ public class XCFGNode {
         assert _n != null;
         for (XCFGNode i: prevNode){
             if (i.nodeID==_n.nodeID) {
-                System.out.println("XCFGNode:error:duplicate link "+nodeID+"<-"+_n.nodeID);
+//                System.out.println("XCFGNode:error:duplicate link "+nodeID+"<-"+_n.nodeID);
                 return;
             }
         }

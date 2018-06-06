@@ -29,7 +29,7 @@ public class XIRInst {
 
     public opType op;
     public Vector<XIRInstAddr> oprList;
-    public InstInfo info;
+    public InstInfo info = new InstInfo();
 
     public static boolean isOpCommute(opType _op) {
         switch (_op){
@@ -65,14 +65,14 @@ public class XIRInst {
     public XIRInst(opType _op, XIRInstAddr opr1, XIRInstAddr opr2){
         op = _op;
         oprList = new Vector<>();
-        oprList.add(opr1);
-        oprList.add(opr2);
+        if (opr1 != null) oprList.add(opr1);
+        if (opr2 != null) oprList.add(opr2);
     }
 
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder(op.toString().toUpperCase());
-        str.append(' ');
+        str.append(' ').append(info).append(' ');
         oprList.forEach(str::append);
         return str.toString();
     }

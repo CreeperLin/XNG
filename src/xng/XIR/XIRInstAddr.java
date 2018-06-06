@@ -60,16 +60,14 @@ public class XIRInstAddr {
         return false;
     }
 
+    public static XIRInstAddr newColRegAddr(int c) {
+        System.out.println("XIRInstAddr:new col reg:"+c);
+        return new XIRInstAddr(addrType.a_reg,-6, c,0,0);
+    }
+
     public static XIRInstAddr newStaticAddr(String name, int size){
         System.out.println("XIRInstAddr:new static:"+name);
         XIRInstAddr inst = new XIRInstAddr(addrType.a_static,size,0,0,0);
-        inst.str = name;
-        return inst;
-    }
-
-    public static XIRInstAddr newStaticAddr(String name, String val){
-        System.out.println("XIRInstAddr:new static:"+name);
-        XIRInstAddr inst = new XIRInstAddr(addrType.a_static,0,0,0,0);
         inst.str = name;
         return inst;
     }
@@ -89,12 +87,6 @@ public class XIRInstAddr {
         return new XIRInstAddr(addrType.a_stack,stackCount++,size,0,0);
     }
 
-//    public static XIRInstAddr newStackAddr(int id, int size, int ofs){
-//        int c = stackCount++;
-//        System.out.println("XIRInstAddr:new stack:"+c+":"+ofs);
-//        return new XIRInstAddr(addrType.a_stack,c,size,ofs,id==0?c:id);
-//    }
-
     public static XIRInstAddr newJumpAddr(XCFGNode node){
         XIRInstAddr addr = new XIRInstAddr(addrType.a_label,node.nodeID,0,0,0);
         addr.str = node.name;
@@ -109,10 +101,12 @@ public class XIRInstAddr {
         return addr;
     }
 
-
     public static XIRInstAddr newImmAddr(int l1, int l2){
         System.out.println("XIRInstAddr:new imm:"+l1+' '+l2);
-        return new XIRInstAddr(addrType.a_imm,l1,l2,0,0);
+        XIRInstAddr t = new XIRInstAddr(addrType.a_imm,l1,l2,0,0);
+        t.info.type = VarInfo.valType.v_const;
+        t.info.constValue = l1;
+        return t;
     }
 
     public static XIRInstAddr newMemAddr(XIRInstAddr base, XIRInstAddr ofs, int scale, int num){
@@ -138,7 +132,7 @@ public class XIRInstAddr {
                 if (addr1==null) return "("+type.toString()+' '+lit1 + ' '+ lit2 + ' '+ lit3 +' '+ lit4 +") ";
                 return "("+type.toString()+' '+addr1 + ' '+ addr2 + ' '+ lit3 +' '+ lit4 +") ";
             case a_reg:
-                return "("+type.toString()+' '+lit1 + ") ";
+                return "("+type.toString()+' '+(lit1==-6?("#"+lit2):lit1) + ") ";
             case a_imm:
                 return "("+type.toString()+' '+lit1 + ") ";
             case a_stack:

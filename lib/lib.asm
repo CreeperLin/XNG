@@ -1,5 +1,6 @@
 global _lib_newline
 global _lib_printInt
+global _lib_printlnInt
 global _lib_print
 global _lib_println
 global _lib_getString
@@ -39,6 +40,13 @@ _lib_printInt:
         jmp     printf
         nop
 ALIGN   16
+_lib_printlnInt:
+        mov     rsi, rdi
+        xor     eax, eax
+        mov     edi, L_021
+        jmp     printf
+        nop
+ALIGN   16
 _lib_print:
         mov     rsi, qword [rel stdout]
         jmp     fputs
@@ -51,7 +59,7 @@ _lib_getString:
         push    rbx
         mov     edi, 256
         call    malloc
-        mov     edi, L_021
+        mov     edi, L_022
         mov     rbx, rax
         mov     rsi, rax
         xor     eax, eax
@@ -417,4 +425,6 @@ SECTION .rodata.str1.1
 L_020:
         db 25H, 64H, 00H
 L_021:
+        db 25H, 64H, 0AH, 00H
+L_022:
         db 25H, 73H, 00H

@@ -32,7 +32,7 @@ public class VarAnalyzer {
         VarInfo inf1 = inst.oprList.size() > 0 ? inst.oprList.get(0).info : null;
         VarInfo inf2 = inst.oprList.size() > 1 ? inst.oprList.get(1).info : null;
         VarInfo inf3 = inst.oprList.size() > 2 ? inst.oprList.get(2).info : null;
-        VarInfo.constPropagate(inst.op,inf1,inf2,inf3);
+//        VarInfo.constPropagate(inst.op,inf1,inf2,inf3);
         switch (inst.op) {
             case op_mov:
                 ++inf1.writeCount;
@@ -54,8 +54,8 @@ public class VarAnalyzer {
             case op_ge:
             case op_gt:
             case op_le:
+                ++inf1.readCount;
                 ++inf2.readCount;
-                ++inf3.readCount;
                 break;
             case op_ret:
                 break;
@@ -63,7 +63,7 @@ public class VarAnalyzer {
             case op_neg:
             case op_pos:
                 ++inf1.writeCount;
-                ++inf2.readCount;
+                ++inf1.readCount;
                 break;
             case op_add:
             case op_sub:
@@ -77,15 +77,24 @@ public class VarAnalyzer {
             case op_div:
                 ++inf1.writeCount;
                 ++inf2.readCount;
-                ++inf3.readCount;
                 break;
         }
-        for (XIRInstAddr i : inst.oprList) {
-            if (i.info.type == VarInfo.valType.v_const) {
-                i.type = XIRInstAddr.addrType.a_imm;
-                i.lit1 = i.info.constValue;
-                i.addr1 = i.addr2 = null;
+        for (XIRInstAddr i: inst.oprList) {
+            if (i.type == XIRInstAddr.addrType.a_mem) {
+                if(i.addr1!=null) {
+                    ++i.addr1.info.readCount;
+                }
+                if(i.addr2!=null) {
+                    ++i.addr2.info.readCount;
+                }
             }
         }
+//        for (XIRInstAddr i : inst.oprList) {
+//            if (i.info.type == VarInfo.valType.v_const) {
+//                i.type = XIRInstAddr.addrType.a_imm;
+//                i.lit1 = i.info.constValue;
+//                i.addr1 = i.addr2 = null;
+//            }
+//        }
     }
 }
